@@ -34,7 +34,7 @@ export class AuthUseCase {
 
     const token = sign({}, process.env.SECRET as string, {
       subject: user.id,
-      expiresIn: '1d'
+      expiresIn: process.env.JWT_EXPIRES
     });
 
     return {

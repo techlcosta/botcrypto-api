@@ -12,8 +12,11 @@ datasource db {
 
 model Users {
   id        String   @id @unique @default(uuid())
-  username      String   @unique
+  username  String   @unique
   password  String
+  apiURL    String
+  accessKey String
+  secretKey String
   updatedAt DateTime
   createdAt DateTime
 

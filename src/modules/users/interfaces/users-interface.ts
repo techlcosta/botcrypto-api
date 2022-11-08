@@ -9,6 +9,9 @@ export interface UserInterface {
   id: string;
   username: string;
   password: string;
+  apiURL: string;
+  accessKey: string;
+  secretKey: string;
   createdAt: Date;
   updatedAt: Date;
 }
