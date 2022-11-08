@@ -1,5 +1,5 @@
 import { compare } from 'bcrypt';
-import { MiddlewareError } from './../../../middlewares/middlewareError';
+import { AppError } from '../../../helpers/errors/appError';
 
 import { sign } from 'jsonwebtoken';
 import { UsersRepositoryInterface } from '../interfaces/users-interface';
@@ -23,13 +23,13 @@ export class AuthUseCase {
     const user = await this.usersRepository.findByUser(username);
 
     if (!user) {
-      throw new MiddlewareError('user or password incorret!');
+      throw new AppError('user or password incorret!', 401, 'invalid');
     }
 
     const passwordMach = await compare(password, user.password);
 
     if (!passwordMach) {
-      throw new MiddlewareError('user or password incorret!');
+      throw new AppError('user or password incorret!', 401, 'invalid');
     }
 
     const token = sign({}, process.env.SECRET as string, {

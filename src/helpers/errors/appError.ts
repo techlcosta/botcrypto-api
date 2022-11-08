@@ -1,5 +1,5 @@
 type CodeType = 'invalid' | 'expired';
-export class MiddlewareError extends Error {
+export class AppError extends Error {
   public readonly message: string;
 
   public readonly code?: string;

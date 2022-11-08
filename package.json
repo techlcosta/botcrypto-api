@@ -38,5 +38,8 @@
     "helmet": "^6.0.0",
     "jsonwebtoken": "^8.5.1",
     "ts-node": "^10.9.1"
+  },
+  "prisma": {
+    "seed": "ts-node src/database/seed.ts"
   }
 }

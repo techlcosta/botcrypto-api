@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import cors from 'cors';
 import dotenv from 'dotenv';
-import express, { Request, Response } from 'express';
+import express, { json } from 'express';
 import 'express-async-errors';
 import helmet from 'helmet';
-import { MiddlewareError } from './middlewares/middlewareError';
+import { ErrorMiddlewate } from './middlewares/errorMiddleware';
 import { router } from './routes/routes';
 
 dotenv.config();
@@ -14,18 +15,12 @@ app.use(cors());
 
 app.use(helmet());
 
-app.use(express.json());
+app.use(json());
 
 app.use('/api', router);
 
+app.use(ErrorMiddlewate);
+
 app.listen(process.env.PORT, () => {
   console.log(`server is running! ${process.env.PORT}`);
-});
-
-app.use((err: Error, request: Request, response: Response) => {
-  if (err instanceof MiddlewareError) {
-    return response.status(err.statusCode).json({ message: err.message, code: err.code });
-  }
-
-  return response.status(500).json({ message: `Internal server error - ${err.message}` });
 });
