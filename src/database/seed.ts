@@ -1,15 +1,15 @@
-import { hash } from 'bcrypt';
-import { encrypt } from '../helpers/secure/appCrypto';
-import { prisma } from '../prisma';
+import { hash } from 'bcrypt'
+import { encrypt } from '../helpers/secure/appCrypto'
+import { prisma } from '../prisma'
 
-async function main() {
+async function main (): Promise<void> {
   const user = await prisma.users.findFirst({
     where: {
       username: process.env.USER as string
     }
-  });
+  })
 
-  if (!user) {
+  if (user == null) {
     const newUser = await prisma.users.create({
       data: {
         username: process.env.USER as string,
@@ -20,33 +20,19 @@ async function main() {
         createdAt: new Date(),
         updatedAt: new Date()
       }
-    });
-    console.log(newUser);
+    })
+    console.log(newUser)
   } else {
-    const updatedUser = await prisma.users.update({
-      where: {
-        id: user.id
-      },
-      data: {
-        username: process.env.USER as string,
-        password: await hash(process.env.PASSWORD as string, 10),
-        apiURL: process.env.API_URL as string,
-        accessKey: process.env.ACCESS_KEY as string,
-        secretKey: encrypt(process.env.SECRET_KEY as string),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    });
-    console.log(updatedUser);
+    console.log(user)
   }
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect();
+    await prisma.$disconnect()
   })
   .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

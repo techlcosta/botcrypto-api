@@ -1,15 +1,15 @@
-type CodeType = 'invalid' | 'expired';
+type CodeType = 'invalid' | 'expired'
 export class AppError extends Error {
-  public readonly message: string;
+  public readonly message: string
 
-  public readonly code?: string;
+  public readonly code?: string
 
-  public readonly statusCode: number;
+  public readonly statusCode: number
 
-  constructor(message: string, statusCode = 400, code?: CodeType) {
-    super();
-    this.message = message;
-    this.code = code;
-    this.statusCode = statusCode;
+  constructor (message: string, statusCode = 400, code?: CodeType) {
+    super()
+    this.message = message
+    this.code = code
+    this.statusCode = statusCode
   }
 }
