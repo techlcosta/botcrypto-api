@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { UsersRepository } from '../repositories/usersRepository'
+import { UsersRepository } from '../repositories/users-repository'
 import { AuthUseCase } from '../use-cases/authUser-useCase'
 
 export class AuthController {

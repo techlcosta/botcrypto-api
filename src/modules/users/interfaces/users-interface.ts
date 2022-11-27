@@ -10,6 +10,7 @@ export interface UserInterface {
   username: string
   password: string
   apiURL: string
+  streamURL: string
   accessKey: string
   secretKey: string
   createdAt: Date
@@ -20,6 +21,7 @@ export interface InputUpdateUserInterface {
   id: string
   password?: string
   apiURL?: string
+  streamURL?: string
   accessKey?: string
   secretKey?: string
 }

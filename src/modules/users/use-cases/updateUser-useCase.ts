@@ -5,6 +5,7 @@ interface UpdateUserUseCaseRquestInterface {
   id: string
   password?: string
   apiURL?: string
+  streamURL?: string
   accessKey?: string
   secretKey?: string
 }
@@ -13,13 +14,14 @@ interface UpdateUserUseCaseResponseInterface {
   id: string
   username: string
   apiURL: string
+  streamURL: string
   accessKey: string
 }
 
 export class UpdateUserUseCase {
   constructor (private readonly userRepository: UsersRepositoryInterface) {}
 
-  async execute ({ id, password, apiURL, accessKey, secretKey }: UpdateUserUseCaseRquestInterface): Promise<UpdateUserUseCaseResponseInterface> {
+  async execute ({ id, password, apiURL, streamURL, accessKey, secretKey }: UpdateUserUseCaseRquestInterface): Promise<UpdateUserUseCaseResponseInterface> {
     const alreadyExistsUser = await this.userRepository.findById(id)
 
     if (alreadyExistsUser == null) throw new AppError('User not found!')
@@ -28,6 +30,7 @@ export class UpdateUserUseCase {
       id,
       password,
       apiURL,
+      streamURL,
       accessKey,
       secretKey
     })
@@ -36,6 +39,7 @@ export class UpdateUserUseCase {
       id: updatedUser.id,
       username: updatedUser.username,
       apiURL: updatedUser.apiURL,
+      streamURL: updatedUser.streamURL,
       accessKey: updatedUser.accessKey
     } as UpdateUserUseCaseResponseInterface
   }

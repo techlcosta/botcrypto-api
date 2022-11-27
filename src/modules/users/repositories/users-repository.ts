@@ -3,24 +3,28 @@ import { InputUpdateUserInterface, UserInterface, UsersRepositoryInterface } fro
 
 export class UsersRepository implements UsersRepositoryInterface {
   async findById (id: string): Promise<UserInterface | null> {
-    return await prisma.users.findFirst({
+    const response = await prisma.user.findFirst({
       where: {
         id
       }
     })
+
+    return response
   }
 
   async findByUser (username: string): Promise<UserInterface | null> {
-    return await prisma.users.findFirst({
+    const response = await prisma.user.findFirst({
       where: {
         username
       }
     })
+
+    return response
   }
 
   async update (data: InputUpdateUserInterface): Promise<UserInterface> {
     const { id, ...rest } = data
-    return await prisma.users.update({
+    const response = await prisma.user.update({
       where: {
         id
       },
@@ -28,5 +32,7 @@ export class UsersRepository implements UsersRepositoryInterface {
         ...rest
       }
     })
+
+    return response
   }
 }

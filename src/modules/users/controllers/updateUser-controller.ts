@@ -1,10 +1,10 @@
 import { Request, Response } from 'express'
-import { UsersRepository } from './../repositories/usersRepository'
+import { UsersRepository } from '../repositories/users-repository'
 import { UpdateUserUseCase } from './../use-cases/updateUser-useCase'
 
 export class UpdateUserController {
   async handle (request: Request, response: Response): Promise<Response> {
-    const { password, apiURL, accessKey, secretKey } = await request.body
+    const { password, apiURL, streamURL, accessKey, secretKey } = await request.body
 
     const { id } = request.user
 
@@ -16,6 +16,7 @@ export class UpdateUserController {
       id,
       password,
       apiURL,
+      streamURL,
       accessKey,
       secretKey
     })
