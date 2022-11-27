@@ -18,6 +18,7 @@ model User {
   streamURL String
   accessKey String
   secretKey String
+  Order     Order[]
   updatedAt DateTime @default(now()) @updatedAt
   createdAt DateTime @default(now())
 
@@ -38,4 +39,32 @@ model Symbol {
   createdAt      DateTime @default(now())
 
   @@map("Symbols")
+}
+
+model Order {
+  id              String   @id @unique @default(uuid())
+  automationId    String?
+  symbol          String
+  orderId         String   @unique
+  clientOrderId   String   @unique
+  transactionTime BigInt
+  type            String
+  side            String
+  quantity        String
+  status          String
+  icebergQuantity String?
+  obs             String?
+  limitPrice      String?
+  stopPrice       String?
+  avgPrice        String?
+  comission       String?
+  net             String?
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  isMaker         Boolean  @default(false)
+  updatedAt       DateTime @default(now()) @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@index([symbol], map: "order_symbol_index")
+  @@map("Orders")
 }
