@@ -23,7 +23,7 @@ export function WebSocketServer (server: any): Server<WebSocket> {
 
           const usersRepository = new UsersRepository()
 
-          const user = await usersRepository.findById(userId)
+          const user = await usersRepository.findById({ id: userId })
 
           if (!user) {
             callback(false, 401, 'Unauthorized')

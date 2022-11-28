@@ -30,7 +30,7 @@ export class ExchangeMonitorUseCase {
   async execute (): Promise<void> {
     const { sub: userId } = verify(this.userProtocol, process.env.SECRET as string) as PayloadInterface
 
-    const user = await this.usersRepository.findById(userId)
+    const user = await this.usersRepository.findById({ id: userId })
 
     if (user) {
       const settings = {

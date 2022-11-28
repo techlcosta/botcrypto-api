@@ -14,7 +14,7 @@ export class SyncSymbolsUseCase {
   ) { }
 
   async execute (id: string): Promise<void> {
-    const user = await this.userRepository.findById(id)
+    const user = await this.userRepository.findById({ id })
 
     if (!user) throw new AppError('User not found')
 

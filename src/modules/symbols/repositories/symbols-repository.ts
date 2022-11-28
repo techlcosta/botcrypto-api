@@ -1,5 +1,5 @@
 import { prisma } from './../../../prisma'
-import { InputUpdateSymbolsInterface, SymbolsInterface, SymbolsRepositoryInterface } from './../interfaces/symbols-interface'
+import { InputDeleteSymbolInterface, InputFindSymbolInterface, InputUpdateSymbolsInterface, SymbolsInterface, SymbolsRepositoryInterface } from './../interfaces/symbols-interface'
 
 export class SymbolsRepository implements SymbolsRepositoryInterface {
   async get (): Promise<SymbolsInterface[]> {
@@ -8,7 +8,7 @@ export class SymbolsRepository implements SymbolsRepositoryInterface {
     return symbols
   }
 
-  async findBySymbol (symbol: string): Promise<SymbolsInterface | null> {
+  async findBySymbol ({ symbol }: InputFindSymbolInterface): Promise<SymbolsInterface | null> {
     return await prisma.symbol.findFirst({
       where: {
         symbol
@@ -36,7 +36,7 @@ export class SymbolsRepository implements SymbolsRepositoryInterface {
     })
   }
 
-  async delete (id: string): Promise<void> {
+  async delete ({ id }: InputDeleteSymbolInterface): Promise<void> {
     await prisma.symbol.delete({
       where: {
         id

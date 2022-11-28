@@ -17,6 +17,14 @@ export interface UserInterface {
   updatedAt: Date
 }
 
+export interface InputFindUserByIdInterface {
+  id: string
+}
+
+export interface InputFindUserByUserNameInterface {
+  username: string
+}
+
 export interface InputUpdateUserInterface {
   id: string
   password?: string
@@ -27,7 +35,7 @@ export interface InputUpdateUserInterface {
 }
 
 export interface UsersRepositoryInterface {
-  findById: (id: string) => Promise<UserInterface | null>
-  findByUser: (username: string) => Promise<UserInterface | null>
+  findById: ({ id }: InputFindUserByIdInterface) => Promise<UserInterface | null>
+  findByUser: ({ username }: InputFindUserByUserNameInterface) => Promise<UserInterface | null>
   update: (data: InputUpdateUserInterface) => Promise<UserInterface>
 }

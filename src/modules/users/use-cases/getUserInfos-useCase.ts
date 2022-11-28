@@ -17,7 +17,7 @@ export class GetUserInfosUseCase {
   constructor (private readonly userRepository: UsersRepositoryInterface) { }
 
   async execute ({ id }: GetUserInfosUseCaseRequestInterface): Promise<GetUserInfosUseCaseResponseInterface> {
-    const user = await this.userRepository.findById(id)
+    const user = await this.userRepository.findById({ id })
 
     if (user == null) throw new AppError('User not found!')
 

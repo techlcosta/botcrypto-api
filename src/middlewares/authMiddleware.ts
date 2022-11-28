@@ -21,7 +21,7 @@ export async function AuthMiddleware (request: Request, response: Response, next
 
     const usersRepository = new UsersRepository()
 
-    const user = await usersRepository.findById(userId)
+    const user = await usersRepository.findById({ id: userId })
 
     if (user == null) {
       throw new AppError('User does not exists', 401)

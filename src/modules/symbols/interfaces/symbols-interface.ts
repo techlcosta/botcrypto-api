@@ -23,6 +23,10 @@ export interface InputCreateSymbolsInterface {
   minLotSize: string
 }
 
+export interface InputFindSymbolInterface {
+  symbol: string
+}
+
 export interface InputUpdateSymbolsInterface {
   symbol: string
   base?: string
@@ -34,9 +38,13 @@ export interface InputUpdateSymbolsInterface {
   isFavorite?: boolean
 }
 
+export interface InputDeleteSymbolInterface {
+  id: string
+}
+
 export interface SymbolsRepositoryInterface {
   get: () => Promise<SymbolsInterface[]>
-  findBySymbol: (symbol: string) => Promise<SymbolsInterface | null>
+  findBySymbol: ({ symbol }: InputFindSymbolInterface) => Promise<SymbolsInterface | null>
   update: (data: InputUpdateSymbolsInterface) => Promise<void>
-  delete: (id: string) => Promise<void>
+  delete: ({ id }: InputDeleteSymbolInterface) => Promise<void>
 }

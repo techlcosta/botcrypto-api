@@ -11,10 +11,10 @@ export class GetBalaceUseCase {
     private readonly userRepository: UsersRepositoryInterface,
     private readonly aesCrypto: AesCryptoAdapterInterface,
     private readonly exchangeRepository: ExchangeRepositoryInterface
-  ) {}
+  ) { }
 
   async execute ({ id }: GetBalanceUseCaseRequestInterface): Promise<any> {
-    const user = await this.userRepository.findById(id)
+    const user = await this.userRepository.findById({ id })
 
     if (!user) throw new AppError('User not found')
 

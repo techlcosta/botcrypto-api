@@ -1,8 +1,9 @@
 import { prisma } from '../../../prisma'
 import { InputUpdateUserInterface, UserInterface, UsersRepositoryInterface } from '../interfaces/users-interface'
+import { InputFindUserByIdInterface, InputFindUserByUserNameInterface } from './../interfaces/users-interface'
 
 export class UsersRepository implements UsersRepositoryInterface {
-  async findById (id: string): Promise<UserInterface | null> {
+  async findById ({ id }: InputFindUserByIdInterface): Promise<UserInterface | null> {
     const response = await prisma.user.findFirst({
       where: {
         id
@@ -12,7 +13,7 @@ export class UsersRepository implements UsersRepositoryInterface {
     return response
   }
 
-  async findByUser (username: string): Promise<UserInterface | null> {
+  async findByUser ({ username }: InputFindUserByUserNameInterface): Promise<UserInterface | null> {
     const response = await prisma.user.findFirst({
       where: {
         username

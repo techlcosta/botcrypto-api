@@ -15,12 +15,12 @@ interface AuthenticateUserResponseUseCaseInterface {
 }
 
 export class AuthUseCase {
-  constructor (private readonly usersRepository: UsersRepositoryInterface) {}
+  constructor (private readonly usersRepository: UsersRepositoryInterface) { }
 
   async execute (request: AuthenticateUserRequestUseCaseInterface): Promise<AuthenticateUserResponseUseCaseInterface> {
     const { username, password } = request
 
-    const user = await this.usersRepository.findByUser(username)
+    const user = await this.usersRepository.findByUser({ username })
 
     if (user == null) {
       throw new AppError('user or password incorret!', 401, 'invalid')
