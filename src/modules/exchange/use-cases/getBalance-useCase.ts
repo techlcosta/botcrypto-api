@@ -1,6 +1,4 @@
-import { AesCryptoAdapterInterface } from '../../../helpers/adapters/aesCrypto'
-import { AppError } from '../../../helpers/errors/appError'
-import { UsersRepositoryInterface } from '../../users/interfaces/users-interface'
+import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 import { ExchangeRepositoryInterface } from './../interfaces/exchange-interface'
 
 interface GetBalanceUseCaseRequestInterface {
@@ -8,24 +6,12 @@ interface GetBalanceUseCaseRequestInterface {
 }
 export class GetBalaceUseCase {
   constructor (
-    private readonly userRepository: UsersRepositoryInterface,
-    private readonly aesCrypto: AesCryptoAdapterInterface,
+    private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
     private readonly exchangeRepository: ExchangeRepositoryInterface
   ) { }
 
   async execute ({ id }: GetBalanceUseCaseRequestInterface): Promise<any> {
-    const user = await this.userRepository.findById({ id })
-
-    if (!user) throw new AppError('User not found')
-
-    const settings = {
-      APIKEY: user.accessKey,
-      APISECRET: this.aesCrypto.decrypt(user.secretKey),
-      urls: {
-        base: user.apiURL,
-        stream: user.streamURL
-      }
-    }
+    const settings = await this.getSettingsDecrypted.handle({ userId: id })
 
     await this.exchangeRepository.setSettings(settings)
 

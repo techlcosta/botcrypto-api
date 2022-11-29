@@ -23,27 +23,21 @@ async function main (): Promise<void> {
     })
     console.log(newUser)
 
-    const symbols = await prisma.symbol.findFirst()
+    const newSymbol = await prisma.symbol.create({
+      data: {
+        symbol: 'BTCBUSD',
+        base: 'BTC',
+        quote: 'BUSD',
+        basePrecision: 8,
+        quotePrecision: 8,
+        minNotional: '0.1',
+        minLotSize: '0.1',
+        isFavorite: true,
+        userId: newUser.id
+      }
+    })
 
-    if (!symbols) {
-      const newSymbol = await prisma.symbol.create({
-        data: {
-          symbol: 'BTCBUSD',
-          base: 'BTC',
-          quote: 'BUSD',
-          basePrecision: 8,
-          quotePrecision: 8,
-          minNotional: '0.1',
-          minLotSize: '0.1',
-          isFavorite: true,
-          userId: newUser.id
-        }
-      })
-
-      console.log(newSymbol)
-    } else {
-      console.log(symbols)
-    }
+    console.log(newSymbol)
   } else {
     console.log(user)
   }

@@ -5,7 +5,7 @@ export class UpdateSymbolsUseCase {
   constructor (private readonly symbolsRepository: SymbolsRepositoryInterface) { }
 
   async execute (data: InputUpdateSymbolsInterface): Promise<void> {
-    const symbol = await this.symbolsRepository.findBySymbol({ userId: data.userId as string, symbol: data.symbol })
+    const symbol = await this.symbolsRepository.findBySymbol({ userId: data.userId, symbol: data.symbol })
 
     if (!symbol) throw new AppError(`This "${data.symbol}" symbol not found.`)
 

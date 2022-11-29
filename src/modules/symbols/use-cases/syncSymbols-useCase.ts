@@ -1,31 +1,18 @@
-import { AesCryptoAdapterInterface } from '../../../helpers/adapters/aesCrypto'
-import { UsersRepositoryInterface } from '../../users/interfaces/users-interface'
+import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 import { SymbolsRepositoryInterface } from '../interfaces/symbols-interface'
-import { AppError } from './../../../helpers/errors/appError'
 import { ExchangeRepositoryInterface } from './../../exchange/interfaces/exchange-interface'
 import { InputUpdateSymbolsInterface } from './../interfaces/symbols-interface'
 
 export class SyncSymbolsUseCase {
   constructor (
-    private readonly userRepository: UsersRepositoryInterface,
+    private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
     private readonly symbolsRepository: SymbolsRepositoryInterface,
-    private readonly exchangeRepository: ExchangeRepositoryInterface,
-    private readonly aesCrypto: AesCryptoAdapterInterface
+    private readonly exchangeRepository: ExchangeRepositoryInterface
+
   ) { }
 
   async execute (id: string): Promise<void> {
-    const user = await this.userRepository.findById({ id })
-
-    if (!user) throw new AppError('User not found')
-
-    const settings = {
-      APIKEY: user.accessKey,
-      APISECRET: this.aesCrypto.decrypt(user.secretKey),
-      urls: {
-        base: user.apiURL,
-        stream: user.streamURL
-      }
-    }
+    const settings = await this.getSettingsDecrypted.handle({ userId: id })
 
     await this.exchangeRepository.setSettings(settings)
 
