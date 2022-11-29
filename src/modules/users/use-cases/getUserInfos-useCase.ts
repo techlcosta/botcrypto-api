@@ -14,10 +14,10 @@ interface GetUserInfosUseCaseResponseInterface {
 }
 
 export class GetUserInfosUseCase {
-  constructor (private readonly userRepository: UsersRepositoryInterface) { }
+  constructor (private readonly usersRepository: UsersRepositoryInterface) { }
 
   async execute ({ id }: GetUserInfosUseCaseRequestInterface): Promise<GetUserInfosUseCaseResponseInterface> {
-    const user = await this.userRepository.findById({ id })
+    const user = await this.usersRepository.findById({ id })
 
     if (user == null) throw new AppError('User not found!')
 

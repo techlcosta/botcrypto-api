@@ -19,14 +19,14 @@ interface UpdateUserUseCaseResponseInterface {
 }
 
 export class UpdateUserUseCase {
-  constructor (private readonly userRepository: UsersRepositoryInterface) { }
+  constructor (private readonly usersRepository: UsersRepositoryInterface) { }
 
   async execute ({ id, password, apiURL, streamURL, accessKey, secretKey }: UpdateUserUseCaseRquestInterface): Promise<UpdateUserUseCaseResponseInterface> {
-    const alreadyExistsUser = await this.userRepository.findById({ id })
+    const alreadyExistsUser = await this.usersRepository.findById({ id })
 
     if (alreadyExistsUser == null) throw new AppError('User not found!')
 
-    const updatedUser = await this.userRepository.update({
+    const updatedUser = await this.usersRepository.update({
       id,
       password,
       apiURL,

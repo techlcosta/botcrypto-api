@@ -25,7 +25,8 @@ export interface OrderInterface {
 
 export interface InputGetOrdersInterface {
   page?: number
-  filter: string
+  filter?: string
+  userId: string
 
 }
 
