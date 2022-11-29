@@ -3,8 +3,8 @@ import { SymbolsInterface, SymbolsRepositoryInterface } from './../interfaces/sy
 export class GetSymbolsUseCase {
   constructor (private readonly symbolsRepository: SymbolsRepositoryInterface) { }
 
-  async execute (): Promise<SymbolsInterface[]> {
-    const symbols = await this.symbolsRepository.get()
+  async execute ({ userId }: { userId: string }): Promise<SymbolsInterface[]> {
+    const symbols = await this.symbolsRepository.get({ userId })
 
     return symbols
   }

@@ -9,6 +9,7 @@ export interface SymbolsInterface {
   minNotional: string
   minLotSize: string
   isFavorite: boolean
+  userId: string
   updatedAt: Date
   createdAt: Date
 }
@@ -23,7 +24,12 @@ export interface InputCreateSymbolsInterface {
   minLotSize: string
 }
 
+export interface InputGetSymbolsInterface {
+  userId: string
+}
+
 export interface InputFindSymbolInterface {
+  userId: string
   symbol: string
 }
 
@@ -36,6 +42,7 @@ export interface InputUpdateSymbolsInterface {
   minNotional?: string
   minLotSize?: string
   isFavorite?: boolean
+  userId: string
 }
 
 export interface InputDeleteSymbolInterface {
@@ -43,8 +50,8 @@ export interface InputDeleteSymbolInterface {
 }
 
 export interface SymbolsRepositoryInterface {
-  get: () => Promise<SymbolsInterface[]>
-  findBySymbol: ({ symbol }: InputFindSymbolInterface) => Promise<SymbolsInterface | null>
+  get: ({ userId }: InputGetSymbolsInterface) => Promise<SymbolsInterface[]>
+  findBySymbol: ({ symbol, userId }: InputFindSymbolInterface) => Promise<SymbolsInterface | null>
   update: (data: InputUpdateSymbolsInterface) => Promise<void>
   delete: ({ id }: InputDeleteSymbolInterface) => Promise<void>
 }

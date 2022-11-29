@@ -21,6 +21,7 @@ model User {
   Order     Order[]
   updatedAt DateTime @default(now()) @updatedAt
   createdAt DateTime @default(now())
+  Symbol    Symbol[]
 
   @@map("users")
 }
@@ -35,9 +36,12 @@ model Symbol {
   minNotional    String
   minLotSize     String
   isFavorite     Boolean  @default(false)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   updatedAt      DateTime @default(now()) @updatedAt
   createdAt      DateTime @default(now())
 
+  @@index([userId], map: "user_id")
   @@map("Symbols")
 }
 
@@ -59,9 +63,9 @@ model Order {
   avgPrice        String?
   comission       String?
   net             String?
+  isMaker         Boolean  @default(false)
   userId          String
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  isMaker         Boolean  @default(false)
   updatedAt       DateTime @default(now()) @updatedAt
   createdAt       DateTime @default(now())
 

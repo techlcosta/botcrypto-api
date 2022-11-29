@@ -41,7 +41,8 @@ export class SyncSymbolsUseCase {
         basePrecision: symbol.baseAssetPrecision,
         quotePrecision: symbol.quoteAssetPrecision,
         minNotional: minNotionalFilter.minNotional || '1',
-        minLotSize: minLotSizeFilter.minQty || '1'
+        minLotSize: minLotSizeFilter.minQty || '1',
+        userId: id
       }
     })
 

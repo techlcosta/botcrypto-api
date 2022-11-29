@@ -5,6 +5,7 @@ import { UpdateSymbolsUseCase } from './../use-cases/updateSymbols-useCase'
 export class UpdateSymbolController {
   async handle (request: Request, response: Response): Promise<Response> {
     const { symbol, base, quote, basePrecision, quotePrecision, minNotional, minLotSize, isFavorite } = await request.body
+    const { id: userId } = request.user
 
     const symbolsRepository = new SymbolsRepository()
 
@@ -18,7 +19,8 @@ export class UpdateSymbolController {
       quotePrecision,
       minNotional,
       minLotSize,
-      isFavorite
+      isFavorite,
+      userId
     })
 
     return response.send()
