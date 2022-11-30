@@ -38,7 +38,7 @@ CREATE TABLE "Orders" (
     "symbol" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
     "clientOrderId" TEXT NOT NULL,
-    "transactionTime" BIGINT NOT NULL,
+    "transactionTime" INTEGER NOT NULL,
     "type" TEXT NOT NULL,
     "side" TEXT NOT NULL,
     "quantity" TEXT NOT NULL,

@@ -12,4 +12,4 @@ router.use('/symbols', symbolsRoutes)
 
 router.use('/exchange', exchangeRoutes)
 
-router.use('/order', ordersRoutes)
+router.use('/orders', ordersRoutes)

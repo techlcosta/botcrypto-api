@@ -48,13 +48,13 @@ export class OrdersRepository implements OrdersRepositoryInterface {
 
   async get (data: InputGetOrdersInterface): Promise<OrderInterface[]> {
     const take = 10
-    const { userId, page, filter } = data
+    const { userId, page, symbol } = data
 
     const orders = await prisma.order.findMany({
       where: {
         userId,
         symbol: {
-          contains: filter
+          contains: symbol
         }
       },
       take,

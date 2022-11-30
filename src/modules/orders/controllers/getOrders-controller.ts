@@ -4,7 +4,7 @@ import { GetOdersUseCase } from './../use-cases/getOders-useCase'
 
 export class GetOrdersController {
   async handle (request: Request, response: Response): Promise<Response> {
-    const { filter, page } = await request.body || request.params || request.query
+    const { symbol, page } = await request.body || request.params || request.query
     const { id: userId } = request.user
     const ordersRepository = new OrdersRepository()
 
@@ -12,7 +12,7 @@ export class GetOrdersController {
 
     const orders = await getOdersUseCase.execute({
       userId,
-      filter,
+      symbol,
       page
     })
 

@@ -4,4 +4,4 @@ import { GetOrdersController } from '../modules/orders/controllers/getOrders-con
 
 export const ordersRoutes = Router()
 
-ordersRoutes.get('/orders', AuthMiddleware, new GetOrdersController().handle)
+ordersRoutes.get('/:symbol?', AuthMiddleware, new GetOrdersController().handle)

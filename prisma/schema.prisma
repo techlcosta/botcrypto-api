@@ -51,7 +51,7 @@ model Order {
   symbol          String
   orderId         String   @unique
   clientOrderId   String   @unique
-  transactionTime BigInt
+  transactionTime Int
   type            String
   side            String
   quantity        String
