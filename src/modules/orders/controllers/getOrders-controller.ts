@@ -4,8 +4,10 @@ import { GetOdersUseCase } from './../use-cases/getOders-useCase'
 
 export class GetOrdersController {
   async handle (request: Request, response: Response): Promise<Response> {
-    const { symbol, page } = await request.body || request.params || request.query
+    const { symbol, page } = request.params ?? request.query
+
     const { id: userId } = request.user
+
     const ordersRepository = new OrdersRepository()
 
     const getOdersUseCase = new GetOdersUseCase(ordersRepository)
@@ -13,7 +15,7 @@ export class GetOrdersController {
     const orders = await getOdersUseCase.execute({
       userId,
       symbol,
-      page
+      page: Number(page ?? 1)
     })
 
     return response.send(orders)

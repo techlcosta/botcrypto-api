@@ -5,7 +5,7 @@ export interface OrderInterface {
   symbol: string
   orderId: string
   clientOrderId: string
-  transactionTime: number
+  transactionTime: string
   type: string
   side: string
   quantity: string
@@ -35,7 +35,7 @@ export interface InputCreateOrdersInterface {
   symbol: string
   orderId: string
   clientOrderId: string
-  transactionTime: number
+  transactionTime: string
   type: string
   side: string
   quantity: string
@@ -55,7 +55,7 @@ export interface InputUpdateOrdersInterface {
   id: string
   automationId?: string
   symbol?: string
-  transactionTime?: number
+  transactionTime?: string
   type?: string
   side?: string
   quantity?: string

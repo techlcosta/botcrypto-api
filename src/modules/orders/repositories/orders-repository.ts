@@ -68,8 +68,11 @@ export class OrdersRepository implements OrdersRepositoryInterface {
   }
 
   async create (data: InputCreateOrdersInterface): Promise<void> {
+    console.log(data)
     await prisma.order.create({
-      data
+      data: {
+        ...data
+      }
     })
   }
 

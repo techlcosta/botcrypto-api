@@ -34,8 +34,8 @@ export class NewOrderUseCase {
       icebergQuantity: options.icebergQuantity,
       orderId: '1',
       clientOrderId: '1',
-      status: '',
-      transactionTime: Date.now(),
+      status: 'NEW',
+      transactionTime: String(Date.now()),
       userId
     })
   }
