@@ -1,7 +1,7 @@
 import { OrderInterface, OrdersRepositoryInterface } from './../interfaces/orders-interface'
 
 interface RequestGetOrdersInterface {
-  page?: number
+  page: number
   symbol?: string
   userId: string
 }

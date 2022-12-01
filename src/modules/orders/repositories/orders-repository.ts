@@ -58,7 +58,7 @@ export class OrdersRepository implements OrdersRepositoryInterface {
         }
       },
       take,
-      skip: take * ((page ?? 1) - 1),
+      skip: take * ((page) - 1),
       orderBy: {
         updatedAt: 'desc'
       }

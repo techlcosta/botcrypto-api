@@ -24,7 +24,7 @@ export interface OrderInterface {
 }
 
 export interface InputGetOrdersInterface {
-  page?: number
+  page: number
   symbol?: string
   userId: string
 
