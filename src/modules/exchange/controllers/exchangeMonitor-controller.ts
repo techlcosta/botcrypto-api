@@ -1,6 +1,7 @@
 import WebSocket from 'ws'
 import { AesCrypto } from '../../../helpers/adapters/aesCrypto'
 import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypted'
+import { OrdersRepository } from '../../orders/repositories/orders-repository'
 import { UsersRepository } from '../../users/repositories/users-repository'
 import { ExchangeRepository } from '../repositories/exchange-repository'
 import { ExchangeMonitorUseCase } from '../use-cases/exchangeMonitor-useCase'
@@ -16,11 +17,13 @@ export class ExchangeMonitorController {
 
     const aesCrypto = new AesCrypto()
 
-    const exchangeRepository = new ExchangeRepository()
-
     const getSettingsDecrypted = new GetSettingsDecrypted(usersRepository, aesCrypto)
 
-    const exchangeMonitorUseCase = new ExchangeMonitorUseCase(userProtocol, wssServer, getSettingsDecrypted, exchangeRepository)
+    const exchangeRepository = new ExchangeRepository()
+
+    const ordersRepository = new OrdersRepository()
+
+    const exchangeMonitorUseCase = new ExchangeMonitorUseCase(userProtocol, wssServer, getSettingsDecrypted, exchangeRepository, ordersRepository)
 
     await exchangeMonitorUseCase.execute()
   }

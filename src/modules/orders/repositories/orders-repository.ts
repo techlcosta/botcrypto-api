@@ -1,8 +1,8 @@
 import { prisma } from '../../../prisma'
-import { InputCreateOrdersInterface, InputGetOrdersInterface, InputUpdateOrdersInterface, OrderInterface, OrdersRepositoryInterface } from './../interfaces/orders-interface'
+import { InputCreateOrdersInterface, InputFindByIdInterface, InputFindByOrderIdAndClieantIdInterface, InputFindByUserIdInterface, InputGetOrdersInterface, InputUpdateOrdersInterface, OrderInterface, OrdersRepositoryInterface } from './../interfaces/orders-interface'
 
 export class OrdersRepository implements OrdersRepositoryInterface {
-  async findById (userId: string, id: string): Promise<OrderInterface | null> {
+  async findById ({ userId, id }: InputFindByIdInterface): Promise<OrderInterface | null> {
     const order = await prisma.order.findFirst({
       where: {
         userId,
@@ -13,7 +13,7 @@ export class OrdersRepository implements OrdersRepositoryInterface {
     return order
   }
 
-  async findByUserId (userId: string): Promise<OrderInterface[] | null> {
+  async findByUserId ({ userId }: InputFindByUserIdInterface): Promise<OrderInterface[] | null> {
     const orders = await prisma.order.findMany({
       where: {
         userId
@@ -23,7 +23,7 @@ export class OrdersRepository implements OrdersRepositoryInterface {
     return orders
   }
 
-  async findByOrderIdAndClieantId (orderId: string, clientOrderId: string): Promise<OrderInterface | null> {
+  async findByOrderIdAndClieantId ({ orderId, clientOrderId }: InputFindByOrderIdAndClieantIdInterface): Promise<OrderInterface | null> {
     const order = await prisma.order.findFirst({
       where: {
         orderId,
@@ -68,7 +68,6 @@ export class OrdersRepository implements OrdersRepositoryInterface {
   }
 
   async create (data: InputCreateOrdersInterface): Promise<void> {
-    console.log(data)
     await prisma.order.create({
       data: {
         ...data
@@ -77,13 +76,15 @@ export class OrdersRepository implements OrdersRepositoryInterface {
   }
 
   async update (data: InputUpdateOrdersInterface): Promise<OrderInterface> {
-    const { id, ...rest } = data
+    const { clientOrderId, ...rest } = data
 
     const order = await prisma.order.update({
       where: {
-        id
+        clientOrderId
       },
-      data: { ...rest }
+      data: {
+        ...rest
+      }
     })
 
     return order

@@ -1,7 +1,9 @@
 import { verify } from 'jsonwebtoken'
 import { Server } from 'ws'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
+import { InputUpdateOrdersInterface, OrdersRepositoryInterface } from '../../orders/interfaces/orders-interface'
 import { ExchangeRepositoryInterface } from '../interfaces/exchange-interface'
+import { ExecutionReportInterface } from './../interfaces/exchange-interface'
 
 interface PayloadInterface {
   sub: string
@@ -12,7 +14,8 @@ export class ExchangeMonitorUseCase {
     private readonly userProtocol: string,
     private readonly websocketServer: Server,
     private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
-    private readonly exchangeRepository: ExchangeRepositoryInterface
+    private readonly exchangeRepository: ExchangeRepositoryInterface,
+    private readonly ordersRepository: OrdersRepositoryInterface
 
   ) { }
 
@@ -23,6 +26,14 @@ export class ExchangeMonitorUseCase {
       if (client.OPEN && client.protocol === this.userProtocol) {
         client.send(JSON.stringify(data))
       }
+    })
+  }
+
+  private async waitOneSecond (): Promise<void> {
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        return resolve()
+      }, 1000)
     })
   }
 
@@ -48,8 +59,50 @@ export class ExchangeMonitorUseCase {
     })
 
     await this.exchangeRepository.userDataStream(
-      balance => this.broadcast({ balance }),
-      execution => console.log(execution),
+      async (callback: ExecutionReportInterface) => {
+        if (callback.e === 'outboundAccountPosition') return this.broadcast({ balance: callback })
+
+        if (callback.e === 'executionReport') {
+          await this.waitOneSecond()
+
+          if (callback.X !== 'NEW') {
+            const clientOrderId = callback.X === 'CANCELED' ? callback.C : callback.c
+
+            const alredyExists = await this.ordersRepository.findByOrderIdAndClieantId({ orderId: callback.i, clientOrderId })
+
+            if (alredyExists) {
+              const orderUpadte: InputUpdateOrdersInterface = {
+                clientOrderId,
+                quantity: callback.q,
+                side: callback.S,
+                type: callback.o,
+                status: callback.X,
+                isMaker: callback.m,
+                transactionTime: String(callback.T)
+              }
+
+              if (callback.o !== 'MARKET') orderUpadte.limitPrice = callback.p
+
+              if (callback.X === 'FILLED') {
+                const quoteAmount = parseFloat(callback.Z)
+                orderUpadte.avgPrice = String(quoteAmount / parseFloat(callback.z))
+                orderUpadte.comission = callback.n
+                const isQuoteComission = callback.N && callback.s.endsWith(callback.N)
+                orderUpadte.net = isQuoteComission ? String(quoteAmount - parseFloat(callback.n)) : String(quoteAmount)
+              }
+
+              if (callback.X === 'REJECTED') orderUpadte.obs = callback.r
+
+              await this.ordersRepository.update(orderUpadte)
+
+              this.broadcast({ execution: callback })
+            }
+          }
+
+          console.log(callback)
+        }
+      },
+      true,
       listStatus => console.log(listStatus)
     )
   }

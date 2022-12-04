@@ -1,5 +1,6 @@
 import Binance from 'node-binance-api'
-import { ExchangeRepositoryInterface, SettingsInterface, _callback } from '../interfaces/exchange-interface'
+import { ExchangeRepositoryInterface, InputBuyInterface, InputCancelInterface, SettingsInterface, _callback } from '../interfaces/exchange-interface'
+import { _asyncCallback } from './../interfaces/exchange-interface'
 
 export class ExchangeRepository implements ExchangeRepositoryInterface {
   private readonly binance: Binance
@@ -31,12 +32,46 @@ export class ExchangeRepository implements ExchangeRepositoryInterface {
     this.binance.websockets.bookTickers((order: any) => callback(order))
   }
 
-  async userDataStream (balanceCallback: _callback, executionCallback: _callback, listStatusCallback: _callback): Promise<void> {
+  async userDataStream (callback: _asyncCallback, executionCallback: boolean, listStatusCallback: _callback): Promise<void> {
     this.binance.websockets.userData(
-      (balance: any) => balanceCallback(balance),
-      (execution: any) => executionCallback(execution),
+      async (userData: any) => await callback(userData),
+      executionCallback,
       (subscribe: any) => console.log(`User data stream: subscrebed: ${subscribe as string}`),
       (listStatus: any) => listStatusCallback(listStatus)
     )
+  }
+
+  async buy (data: InputBuyInterface): Promise<any> {
+    const { symbol, quantity, price, options, type } = data
+
+    if (price && type !== 'MARKET') {
+      const response = await this.binance.buy(symbol, quantity, price, options)
+
+      return response
+    } else {
+      const response = await this.binance.marketBuy(symbol, quantity)
+
+      return response
+    }
+  }
+
+  async sell (data: InputBuyInterface): Promise<any> {
+    const { symbol, quantity, price, options, type } = data
+
+    if (price && type !== 'MARKET') {
+      const response = await this.binance.sell(symbol, quantity, price, options)
+
+      return response
+    } else {
+      const response = await this.binance.marketSell(symbol, quantity)
+
+      return response
+    }
+  }
+
+  async cancel ({ symbol, orderId }: InputCancelInterface): Promise<any> {
+    const response = await this.binance.cancel(symbol, orderId)
+
+    return response
   }
 }

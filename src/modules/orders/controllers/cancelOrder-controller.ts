@@ -3,14 +3,12 @@ import { AesCrypto } from '../../../helpers/adapters/aesCrypto'
 import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypted'
 import { ExchangeRepository } from '../../exchange/repositories/exchange-repository'
 import { UsersRepository } from '../../users/repositories/users-repository'
-import { OrdersRepository } from './../repositories/orders-repository'
-import { NewOrderUseCase } from './../use-cases/newOrder-useCase'
+import { OrdersRepository } from '../repositories/orders-repository'
+import { CancelOrderUseCase } from './../use-cases/cancelOrder-useCase'
 
-export class NewOrderController {
+export class CancelOrderController {
   async handle (request: Request, response: Response): Promise<Response> {
-    const { side, symbol, quantity, limitPrice, type, options, automationId, isMaker } = await request.body
-
-    console.log(request.body)
+    const { symbol, orderId } = await request.body
 
     const { id: userId } = request.user
 
@@ -24,20 +22,13 @@ export class NewOrderController {
 
     const ordersRepository = new OrdersRepository()
 
-    const newOrderUseCase = new NewOrderUseCase(getSettingsDecrypted, exchangeRepository, ordersRepository)
+    const cancelOrderUseCase = new CancelOrderUseCase(getSettingsDecrypted, exchangeRepository, ordersRepository)
 
-    await newOrderUseCase.execute({
-      side,
+    await cancelOrderUseCase.execute({
+      userId,
       symbol,
-      quantity,
-      limitPrice,
-      type,
-      options,
-      automationId,
-      isMaker,
-      userId
+      orderId
     })
-
-    return response.status(201).send()
+    return response.status(204).send()
   }
 }
