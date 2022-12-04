@@ -49,7 +49,7 @@ model Order {
   id              String   @id @unique @default(uuid())
   automationId    String?
   symbol          String
-  orderId         String   @unique
+  orderId         Int      @unique
   clientOrderId   String   @unique
   transactionTime String
   type            String
