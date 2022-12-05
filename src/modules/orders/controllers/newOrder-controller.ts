@@ -10,8 +10,6 @@ export class NewOrderController {
   async handle (request: Request, response: Response): Promise<Response> {
     const { side, symbol, quantity, limitPrice, type, options, automationId, isMaker } = await request.body
 
-    console.log(request.body)
-
     const { id: userId } = request.user
 
     const usersRepository = new UsersRepository()

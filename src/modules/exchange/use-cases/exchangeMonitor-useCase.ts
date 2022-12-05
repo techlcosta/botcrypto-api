@@ -45,13 +45,13 @@ export class ExchangeMonitorUseCase {
     await this.exchangeRepository.setSettings(settings)
 
     await this.exchangeRepository.miniTickerStream((market) => {
-      this.broadcast({ market })
+      this.broadcast({ miniTickerStream: market })
     })
 
     const book: any[] = []
     await this.exchangeRepository.bookTickersStream((order) => {
       if (book.length === 100) {
-        this.broadcast({ book })
+        this.broadcast({ bookTickersStream: book })
         book.length = 0
       } else {
         book.push(order)
@@ -59,47 +59,50 @@ export class ExchangeMonitorUseCase {
     })
 
     await this.exchangeRepository.userDataStream(
-      async (callback: ExecutionReportInterface) => {
+      async (callback) => {
+        // console.log(callback)
+
         if (callback.e === 'outboundAccountPosition') return this.broadcast({ balance: callback })
 
         if (callback.e === 'executionReport') {
           await this.waitOneSecond()
 
-          if (callback.X !== 'NEW') {
-            const clientOrderId = callback.X === 'CANCELED' ? callback.C : callback.c
+          const execution: ExecutionReportInterface = callback
 
-            const alredyExists = await this.ordersRepository.findByOrderIdAndClieantId({ orderId: callback.i, clientOrderId })
+          if (execution.x !== 'NEW') {
+            const clientOrderId = execution.X === 'CANCELED' ? execution.C : execution.c
+
+            const alredyExists = await this.ordersRepository.findByOrderIdAndClieantId({ orderId: execution.i, clientOrderId })
 
             if (alredyExists) {
               const orderUpadte: InputUpdateOrdersInterface = {
                 clientOrderId,
-                quantity: callback.q,
-                side: callback.S,
-                type: callback.o,
-                status: callback.X,
-                isMaker: callback.m,
-                transactionTime: String(callback.T)
+                quantity: execution.q,
+                side: execution.S,
+                type: execution.o,
+                status: execution.X,
+                isMaker: execution.m,
+                transactionTime: String(execution.T)
               }
 
-              if (callback.o !== 'MARKET') orderUpadte.limitPrice = callback.p
+              if (execution.o !== 'MARKET') orderUpadte.limitPrice = execution.p
 
-              if (callback.X === 'FILLED') {
-                const quoteAmount = parseFloat(callback.Z)
-                orderUpadte.avgPrice = String(quoteAmount / parseFloat(callback.z))
-                orderUpadte.comission = callback.n
-                const isQuoteComission = callback.N && callback.s.endsWith(callback.N)
-                orderUpadte.net = isQuoteComission ? String(quoteAmount - parseFloat(callback.n)) : String(quoteAmount)
+              if (execution.X === 'FILLED') {
+                const quoteAmount = parseFloat(execution.Z)
+                orderUpadte.avgPrice = (quoteAmount / parseFloat(execution.z)).toFixed(2)
+                orderUpadte.comission = execution.n
+                const isQuoteComission = execution.N && execution.s.endsWith(execution.N)
+                orderUpadte.net = isQuoteComission ? (quoteAmount - parseFloat(execution.n)).toFixed(2) : quoteAmount.toFixed(2)
+                orderUpadte.status = execution.X
               }
 
-              if (callback.X === 'REJECTED') orderUpadte.obs = callback.r
+              if (execution.X === 'REJECTED') orderUpadte.obs = execution.r
 
-              await this.ordersRepository.update(orderUpadte)
+              const order = await this.ordersRepository.update(orderUpadte)
 
-              this.broadcast({ execution: callback })
+              this.broadcast({ execution: order })
             }
           }
-
-          console.log(callback)
         }
       },
       true,
