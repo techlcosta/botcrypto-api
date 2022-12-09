@@ -1,15 +1,36 @@
 import { prisma } from './../../../prisma'
-import { InputDeleteSymbolInterface, InputFindSymbolInterface, InputGetSymbolsInterface, InputUpdateSymbolsInterface, SymbolsInterface, SymbolsRepositoryInterface } from './../interfaces/symbols-interface'
+import { InputCountSymbolsInterface, InputDeleteSymbolInterface, InputFindSymbolInterface, InputGetSymbolsInterface, InputUpdateSymbolsInterface, SymbolsInterface, SymbolsRepositoryInterface } from './../interfaces/symbols-interface'
 
 export class SymbolsRepository implements SymbolsRepositoryInterface {
-  async get ({ userId }: InputGetSymbolsInterface): Promise<SymbolsInterface[]> {
+  async get ({ userId, symbol, page, onlyFavorites }: InputGetSymbolsInterface): Promise<SymbolsInterface[]> {
+    const take = 10
     const symbols = await prisma.symbol.findMany({
       where: {
-        userId
-      }
+        userId,
+        symbol: symbol && symbol.length > 6
+          ? symbol
+          : { contains: symbol },
+        isFavorite: onlyFavorites && true
+      },
+      take: page && take,
+      skip: page && take * ((page) - 1)
     })
 
     return symbols
+  }
+
+  async count ({ symbol, userId, onlyFavorites }: InputCountSymbolsInterface): Promise<number> {
+    const countNumber = await prisma.symbol.count({
+      where: {
+        userId,
+        symbol: symbol && symbol.length > 6
+          ? symbol
+          : { contains: symbol },
+        isFavorite: onlyFavorites && true
+      }
+    })
+
+    return countNumber
   }
 
   async findBySymbol ({ symbol, userId }: InputFindSymbolInterface): Promise<SymbolsInterface | null> {

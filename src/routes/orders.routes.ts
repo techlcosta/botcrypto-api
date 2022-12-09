@@ -6,7 +6,7 @@ import { NewOrderController } from './../modules/orders/controllers/newOrder-con
 
 export const ordersRoutes = Router()
 
-ordersRoutes.get('/get/:symbol?', AuthMiddleware, new GetOrdersController().handle)
+ordersRoutes.get('/:symbol?', AuthMiddleware, new GetOrdersController().handle)
 
 ordersRoutes.post('/new', AuthMiddleware, new NewOrderController().handle)
 

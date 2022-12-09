@@ -1,6 +1,5 @@
 import Binance from 'node-binance-api'
 import { ExchangeRepositoryInterface, InputBuyInterface, InputCancelInterface, SettingsInterface, _callback } from '../interfaces/exchange-interface'
-import { _asyncCallback } from './../interfaces/exchange-interface'
 
 export class ExchangeRepository implements ExchangeRepositoryInterface {
   private readonly binance: Binance
@@ -32,9 +31,9 @@ export class ExchangeRepository implements ExchangeRepositoryInterface {
     this.binance.websockets.bookTickers((order: any) => callback(order))
   }
 
-  async userDataStream (callback: _asyncCallback, executionCallback: boolean, listStatusCallback: _callback): Promise<void> {
+  async userDataStream (callback: _callback, executionCallback: boolean, listStatusCallback: _callback): Promise<void> {
     this.binance.websockets.userData(
-      async (userData: any) => await callback(userData),
+      async (userData: any) => callback(userData),
       executionCallback,
       (subscribe: any) => console.log(`User data stream: subscrebed: ${subscribe as string}`),
       (listStatus: any) => listStatusCallback(listStatus)

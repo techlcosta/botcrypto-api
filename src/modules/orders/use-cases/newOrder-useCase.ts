@@ -60,6 +60,7 @@ export class NewOrderUseCase {
     }
 
     if (response) {
+      console.log(response)
       await this.ordersRepository.create({
         side,
         symbol,

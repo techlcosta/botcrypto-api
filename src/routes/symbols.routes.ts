@@ -6,7 +6,7 @@ import { UpdateSymbolController } from '../modules/symbols/controllers/updateSym
 
 export const symbolsRoutes = Router()
 
-symbolsRoutes.get('/', AuthMiddleware, new GetSymbolsController().handle)
+symbolsRoutes.get('/:symbol?', AuthMiddleware, new GetSymbolsController().handle)
 
 symbolsRoutes.post('/sync', AuthMiddleware, new SyncSymbolsController().handle)
 

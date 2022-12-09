@@ -37,20 +37,16 @@ export class CancelOrderUseCase {
 
     await this.exchangeRepository.setSettings(settings)
 
-    let response: ResponseCancelOrderBinanceInterface | undefined
-
     try {
-      response = await this.exchangeRepository.cancel({ symbol, orderId: Number(orderId) })
-    } catch (error: any) {
-      console.log(error)
-      throw new AppError(error.body ?? 'New order failed on Binance')
-    }
+      const response: ResponseCancelOrderBinanceInterface = await this.exchangeRepository.cancel({ symbol, orderId: Number(orderId) })
 
-    if (response) {
       await this.ordersRepository.update({
         clientOrderId: response.origClientOrderId,
         status: response.status
       })
+    } catch (error: any) {
+      console.log(error)
+      throw new AppError(error.body ?? 'Cancel order failed on Binance')
     }
   }
 }

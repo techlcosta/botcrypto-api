@@ -17,7 +17,7 @@ export function WebSocketServer (server: any): Server<WebSocket> {
         if (!authToken) {
           callback(false, 401, 'Unauthorized')
         } else {
-          if (!info.origin.includes(process.env.CORS_ORIGIN as string)) callback(false, 401, 'Unauthorized')
+          // if (!info.origin.includes(process.env.CORS_ORIGIN as string)) callback(false, 401, 'Unauthorized')
 
           const { sub: userId } = verify(authToken, process.env.SECRET as string) as PayloadInterface
 

@@ -33,6 +33,11 @@ export interface InputFindByUserIdInterface {
   id: string
 }
 
+export interface InputCountOrdersInterface {
+  symbol?: string
+  userId: string
+}
+
 export interface InputGetOrdersInterface {
   page: number
   symbol?: string
@@ -42,6 +47,7 @@ export interface InputGetOrdersInterface {
 export interface InputFindByOrderIdAndClieantIdInterface {
   orderId: number
   clientOrderId: string
+  userId: string
 }
 
 export interface InputCreateOrdersInterface {
@@ -66,7 +72,6 @@ export interface InputCreateOrdersInterface {
 }
 
 export interface InputUpdateOrdersInterface {
-
   clientOrderId: string
   automationId?: string
   symbol?: string
@@ -89,7 +94,7 @@ export interface OrdersRepositoryInterface {
   findById: ({ id, userId }: InputFindByIdInterface) => Promise<OrderInterface | null>
   findByUserId: ({ userId }: InputFindByUserIdInterface) => Promise<OrderInterface[] | null>
   findByOrderIdAndClieantId: ({ orderId, clientOrderId }: InputFindByOrderIdAndClieantIdInterface) => Promise<OrderInterface | null>
-  count: (filter: string) => Promise<number>
+  count: ({ symbol, userId }: InputCountOrdersInterface) => Promise<number>
   get: (data: InputGetOrdersInterface) => Promise<OrderInterface[]>
   create: (data: InputCreateOrdersInterface) => Promise<void>
   update: (data: InputUpdateOrdersInterface) => Promise<OrderInterface>

@@ -1,5 +1,5 @@
 import { prisma } from '../../../prisma'
-import { InputCreateOrdersInterface, InputFindByIdInterface, InputFindByOrderIdAndClieantIdInterface, InputFindByUserIdInterface, InputGetOrdersInterface, InputUpdateOrdersInterface, OrderInterface, OrdersRepositoryInterface } from './../interfaces/orders-interface'
+import { InputCountOrdersInterface, InputCreateOrdersInterface, InputFindByIdInterface, InputFindByOrderIdAndClieantIdInterface, InputFindByUserIdInterface, InputGetOrdersInterface, InputUpdateOrdersInterface, OrderInterface, OrdersRepositoryInterface } from './../interfaces/orders-interface'
 
 export class OrdersRepository implements OrdersRepositoryInterface {
   async findById ({ userId, id }: InputFindByIdInterface): Promise<OrderInterface | null> {
@@ -23,22 +23,24 @@ export class OrdersRepository implements OrdersRepositoryInterface {
     return orders
   }
 
-  async findByOrderIdAndClieantId ({ orderId, clientOrderId }: InputFindByOrderIdAndClieantIdInterface): Promise<OrderInterface | null> {
+  async findByOrderIdAndClieantId ({ orderId, clientOrderId, userId }: InputFindByOrderIdAndClieantIdInterface): Promise<OrderInterface | null> {
     const order = await prisma.order.findFirst({
       where: {
         orderId,
-        clientOrderId
+        clientOrderId,
+        userId
       }
     })
 
     return order
   }
 
-  async count (filter: string): Promise<number> {
+  async count ({ symbol, userId }: InputCountOrdersInterface): Promise<number> {
     const countNumber = await prisma.order.count({
       where: {
+        userId,
         symbol: {
-          contains: filter
+          contains: symbol
         }
       }
     })
@@ -68,6 +70,8 @@ export class OrdersRepository implements OrdersRepositoryInterface {
   }
 
   async create (data: InputCreateOrdersInterface): Promise<void> {
+    console.log(data.status)
+
     await prisma.order.create({
       data: {
         ...data
@@ -77,6 +81,8 @@ export class OrdersRepository implements OrdersRepositoryInterface {
 
   async update (data: InputUpdateOrdersInterface): Promise<OrderInterface> {
     const { clientOrderId, ...rest } = data
+
+    console.log(rest.status)
 
     const order = await prisma.order.update({
       where: {

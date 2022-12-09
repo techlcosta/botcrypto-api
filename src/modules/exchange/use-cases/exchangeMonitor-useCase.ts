@@ -10,6 +10,7 @@ interface PayloadInterface {
 }
 
 export class ExchangeMonitorUseCase {
+  private readonly queue: ExecutionReportInterface[] = []
   constructor (
     private readonly userProtocol: string,
     private readonly websocketServer: Server,
@@ -26,14 +27,6 @@ export class ExchangeMonitorUseCase {
       if (client.OPEN && client.protocol === this.userProtocol) {
         client.send(JSON.stringify(data))
       }
-    })
-  }
-
-  private async waitOneSecond (): Promise<void> {
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        return resolve()
-      }, 1000)
     })
   }
 
@@ -59,28 +52,30 @@ export class ExchangeMonitorUseCase {
     })
 
     await this.exchangeRepository.userDataStream(
-      async (callback) => {
-        // console.log(callback)
-
-        if (callback.e === 'outboundAccountPosition') return this.broadcast({ balance: callback })
+      (callback) => {
+        if (callback.e === 'outboundAccountPosition') return this.broadcast({ balanceStream: callback })
 
         if (callback.e === 'executionReport') {
-          await this.waitOneSecond()
-
           const execution: ExecutionReportInterface = callback
 
-          if (execution.x !== 'NEW') {
-            const clientOrderId = execution.X === 'CANCELED' ? execution.C : execution.c
+          new Promise<void>((resolve) => {
+            setTimeout(async () => {
+              if (execution.x === 'NEW') return
 
-            const alredyExists = await this.ordersRepository.findByOrderIdAndClieantId({ orderId: execution.i, clientOrderId })
+              console.log(execution, 'aqui')
 
-            if (alredyExists) {
+              const clientOrderId = execution.X === 'CANCELED' ? execution.C : execution.c
+
+              const alredyExists = await this.ordersRepository.findByOrderIdAndClieantId({ userId, clientOrderId, orderId: execution.i })
+
+              if (!alredyExists) return
+
               const orderUpadte: InputUpdateOrdersInterface = {
                 clientOrderId,
                 quantity: execution.q,
                 side: execution.S,
                 type: execution.o,
-                status: execution.X,
+                status: execution.X !== alredyExists.status && (alredyExists.status === 'NEW' || alredyExists.status === 'PARTIALLY_FILLED') ? execution.X : alredyExists.status,
                 isMaker: execution.m,
                 transactionTime: String(execution.T)
               }
@@ -89,20 +84,21 @@ export class ExchangeMonitorUseCase {
 
               if (execution.X === 'FILLED') {
                 const quoteAmount = parseFloat(execution.Z)
-                orderUpadte.avgPrice = (quoteAmount / parseFloat(execution.z)).toFixed(2)
+                orderUpadte.avgPrice = String((quoteAmount / parseFloat(execution.z)))
                 orderUpadte.comission = execution.n
                 const isQuoteComission = execution.N && execution.s.endsWith(execution.N)
-                orderUpadte.net = isQuoteComission ? (quoteAmount - parseFloat(execution.n)).toFixed(2) : quoteAmount.toFixed(2)
+                orderUpadte.net = isQuoteComission ? String((quoteAmount - parseFloat(execution.n))) : String(quoteAmount)
                 orderUpadte.status = execution.X
               }
 
               if (execution.X === 'REJECTED') orderUpadte.obs = execution.r
 
-              const order = await this.ordersRepository.update(orderUpadte)
+              const order = await this.ordersRepository.update(orderUpadte).catch(err => this.broadcast({ error: err }))
+              this.broadcast({ executionStream: order })
 
-              this.broadcast({ execution: order })
-            }
-          }
+              return resolve()
+            }, 1000)
+          }).catch(err => console.log(err))
         }
       },
       true,

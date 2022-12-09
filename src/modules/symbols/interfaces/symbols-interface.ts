@@ -26,6 +26,15 @@ export interface InputCreateSymbolsInterface {
 
 export interface InputGetSymbolsInterface {
   userId: string
+  page?: number
+  symbol?: string
+  onlyFavorites?: boolean
+}
+
+export interface InputCountSymbolsInterface {
+  userId: string
+  symbol?: string
+  onlyFavorites?: boolean
 }
 
 export interface InputFindSymbolInterface {
@@ -50,8 +59,9 @@ export interface InputDeleteSymbolInterface {
 }
 
 export interface SymbolsRepositoryInterface {
-  get: ({ userId }: InputGetSymbolsInterface) => Promise<SymbolsInterface[]>
-  findBySymbol: ({ symbol, userId }: InputFindSymbolInterface) => Promise<SymbolsInterface | null>
+  get: (data: InputGetSymbolsInterface) => Promise<SymbolsInterface[]>
+  count: (data: InputCountSymbolsInterface) => Promise<number>
+  findBySymbol: (data: InputFindSymbolInterface) => Promise<SymbolsInterface | null>
   update: (data: InputUpdateSymbolsInterface) => Promise<void>
-  delete: ({ id }: InputDeleteSymbolInterface) => Promise<void>
+  delete: (data: InputDeleteSymbolInterface) => Promise<void>
 }

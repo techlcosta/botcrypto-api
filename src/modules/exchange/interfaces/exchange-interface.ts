@@ -79,7 +79,7 @@ export interface ExchangeRepositoryInterface {
   exchangeInfo: (callback?: _callback) => Promise<any>
   miniTickerStream: (callback: _callback) => Promise<void>
   bookTickersStream: (callback: _callback) => Promise<void>
-  userDataStream: (callback: _asyncCallback, executionCallback: boolean, listStatusCallback: _callback) => Promise<void>
+  userDataStream: (callback: _callback, executionCallback: boolean, listStatusCallback: _callback) => Promise<void>
   buy: (data: InputBuyInterface) => Promise<any>
   sell: (data: InputBuyInterface) => Promise<any>
   cancel: ({ symbol, orderId }: InputCancelInterface) => Promise<any>
