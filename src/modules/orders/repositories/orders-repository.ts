@@ -62,7 +62,7 @@ export class OrdersRepository implements OrdersRepositoryInterface {
       take,
       skip: take * ((page) - 1),
       orderBy: {
-        updatedAt: 'desc'
+        transactionTime: 'desc'
       }
     })
 
@@ -70,8 +70,6 @@ export class OrdersRepository implements OrdersRepositoryInterface {
   }
 
   async create (data: InputCreateOrdersInterface): Promise<void> {
-    console.log(data.status)
-
     await prisma.order.create({
       data: {
         ...data
@@ -81,8 +79,6 @@ export class OrdersRepository implements OrdersRepositoryInterface {
 
   async update (data: InputUpdateOrdersInterface): Promise<OrderInterface> {
     const { clientOrderId, ...rest } = data
-
-    console.log(rest.status)
 
     const order = await prisma.order.update({
       where: {

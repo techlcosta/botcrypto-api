@@ -22,6 +22,7 @@ interface RequestNewOrderInterface {
 interface ResponseNewOrderBinanceInterface {
   symbol: string
   orderId: number
+  origQty: string
   price: string
   orderListId: number
   clientOrderId: string
@@ -64,7 +65,7 @@ export class NewOrderUseCase {
       await this.ordersRepository.create({
         side,
         symbol,
-        quantity,
+        quantity: response.origQty,
         limitPrice,
         type: response.type,
         automationId,

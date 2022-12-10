@@ -4,13 +4,15 @@ import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypte
 import { ExchangeRepository } from '../../exchange/repositories/exchange-repository'
 import { UsersRepository } from '../../users/repositories/users-repository'
 import { OrdersRepository } from '../repositories/orders-repository'
-import { CancelOrderUseCase } from './../use-cases/cancelOrder-useCase'
+import { SyncOrderUseCase } from './../use-cases/syncOrders-useCase'
 
-export class CancelOrderController {
+export class SyncOrderController {
   async handle (request: Request, response: Response): Promise<Response> {
-    const { symbol, orderId } = await request.body
+    const { id } = request.params
 
     const { id: userId } = request.user
+
+    console.log(id)
 
     const usersRepository = new UsersRepository()
 
@@ -22,13 +24,13 @@ export class CancelOrderController {
 
     const ordersRepository = new OrdersRepository()
 
-    const cancelOrderUseCase = new CancelOrderUseCase(getSettingsDecrypted, exchangeRepository, ordersRepository)
+    const syncOrderUseCase = new SyncOrderUseCase(getSettingsDecrypted, exchangeRepository, ordersRepository)
 
-    const order = await cancelOrderUseCase.execute({
+    const order = await syncOrderUseCase.execute({
       userId,
-      symbol,
-      orderId
+      id
     })
+
     return response.send(order)
   }
 }

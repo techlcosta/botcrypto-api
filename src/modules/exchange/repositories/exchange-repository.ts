@@ -1,5 +1,5 @@
 import Binance from 'node-binance-api'
-import { ExchangeRepositoryInterface, InputBuyInterface, InputCancelInterface, SettingsInterface, _callback } from '../interfaces/exchange-interface'
+import { ExchangeRepositoryInterface, InputBuyInterface, InputCancelInterface, InputOrderStatusInterface, InputOrderTradeInterface, ResponseOrderStatusInterface, ResponseOrdertradeInterface, SettingsInterface, _callback } from '../interfaces/exchange-interface'
 
 export class ExchangeRepository implements ExchangeRepositoryInterface {
   private readonly binance: Binance
@@ -72,5 +72,23 @@ export class ExchangeRepository implements ExchangeRepositoryInterface {
     const response = await this.binance.cancel(symbol, orderId)
 
     return response
+  }
+
+  async orderStatus ({ symbol, orderId }: InputOrderStatusInterface): Promise<ResponseOrderStatusInterface> {
+    const orderid = orderId.toString()
+
+    const response = await this.binance.orderStatus(symbol, undefined, undefined, { orderId: orderid })
+
+    return response
+  }
+
+  async orderTrade ({ symbol, orderId }: InputOrderTradeInterface): Promise<ResponseOrdertradeInterface> {
+    const response: ResponseOrdertradeInterface[] = await this.binance.trades(symbol)
+
+    const order = response.find(order => order.orderId === orderId)
+
+    if (!order) throw new Error('Order not found!')
+
+    return order
   }
 }

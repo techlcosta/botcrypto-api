@@ -73,6 +73,55 @@ export interface InputCancelInterface {
   orderId: number
 }
 
+export interface InputOrderStatusInterface {
+  symbol: string
+  orderId: number
+}
+
+export interface ResponseOrderStatusInterface {
+  symbol: string
+  orderId: number
+  orderListId: number // Unless part of an OCO, the value will always be -1
+  clientOrderId: string
+  price: string
+  origQty: string
+  executedQty: string
+  cummulativeQuoteQty: string
+  status: OrderStatusType
+  timeInForce: string
+  type: string
+  side: string
+  stopPrice: string
+  icebergQty: string
+  time: bigint
+  updateTime: bigint
+  isWorking: true
+  workingTime: bigint
+  origQuoteOrderQty: string
+  selfTradePreventionMode: string
+}
+
+export interface InputOrderTradeInterface {
+  symbol: string
+  orderId: number
+}
+
+export interface ResponseOrdertradeInterface {
+  symbol: string
+  id: number
+  orderId: number
+  orderListId: number
+  price: string
+  qty: string
+  quoteQty: string
+  commission: string
+  commissionAsset: string
+  time: bigint
+  isBuyer: boolean
+  isMaker: false
+  isBestMatch: boolean
+}
+
 export interface ExchangeRepositoryInterface {
   setSettings: (settings: SettingsInterface) => Promise<void>
   exchangeBalance: (callback?: _callback) => Promise<any>
@@ -82,5 +131,7 @@ export interface ExchangeRepositoryInterface {
   userDataStream: (callback: _callback, executionCallback: boolean, listStatusCallback: _callback) => Promise<void>
   buy: (data: InputBuyInterface) => Promise<any>
   sell: (data: InputBuyInterface) => Promise<any>
-  cancel: ({ symbol, orderId }: InputCancelInterface) => Promise<any>
+  cancel: (data: InputCancelInterface) => Promise<any>
+  orderStatus: (data: InputOrderStatusInterface) => Promise<ResponseOrderStatusInterface>
+  orderTrade: (data: InputOrderTradeInterface) => Promise<ResponseOrdertradeInterface>
 }

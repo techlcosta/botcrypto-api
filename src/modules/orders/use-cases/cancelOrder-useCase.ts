@@ -1,7 +1,7 @@
 import { AppError } from '../../../helpers/errors/appError'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 import { ExchangeRepositoryInterface } from '../../exchange/interfaces/exchange-interface'
-import { OrdersRepositoryInterface } from '../interfaces/orders-interface'
+import { OrderInterface, OrdersRepositoryInterface } from '../interfaces/orders-interface'
 
 interface RequestCancelOrderUseCaseInterface {
   symbol: string
@@ -32,7 +32,7 @@ export class CancelOrderUseCase {
     private readonly ordersRepository: OrdersRepositoryInterface
   ) { }
 
-  async execute ({ symbol, orderId, userId }: RequestCancelOrderUseCaseInterface): Promise<void> {
+  async execute ({ symbol, orderId, userId }: RequestCancelOrderUseCaseInterface): Promise<OrderInterface> {
     const settings = await this.getSettingsDecrypted.handle({ userId })
 
     await this.exchangeRepository.setSettings(settings)
@@ -40,10 +40,13 @@ export class CancelOrderUseCase {
     try {
       const response: ResponseCancelOrderBinanceInterface = await this.exchangeRepository.cancel({ symbol, orderId: Number(orderId) })
 
-      await this.ordersRepository.update({
+      const order = await this.ordersRepository.update({
         clientOrderId: response.origClientOrderId,
+        quantity: response.executedQty,
         status: response.status
       })
+
+      return order
     } catch (error: any) {
       console.log(error)
       throw new AppError(error.body ?? 'Cancel order failed on Binance')

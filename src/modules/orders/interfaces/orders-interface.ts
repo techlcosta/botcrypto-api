@@ -88,6 +88,7 @@ export interface InputUpdateOrdersInterface {
   comission?: string
   net?: string
   isMaker?: boolean
+  updatedAt?: Date
 }
 
 export interface OrdersRepositoryInterface {
