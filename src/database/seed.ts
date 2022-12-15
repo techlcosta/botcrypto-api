@@ -1,9 +1,10 @@
 import { hash } from 'bcrypt'
-import { AesCrypto } from '../helpers/adapters/aesCrypto'
+import { AesCrypto } from '../helpers/adapters/aesCrypto/aesCrypto-adapter'
+import { MonitorTypes } from '../modules/monitors/interfaces/monitors-interface'
 import { prisma } from '../prisma'
 
 async function main (): Promise<void> {
-  const user = await prisma.user.findFirst({
+  let user = await prisma.user.findFirst({
     where: {
       username: process.env.USER as string
     }
@@ -11,7 +12,7 @@ async function main (): Promise<void> {
 
   if (!user) {
     const { encrypt } = new AesCrypto()
-    const newUser = await prisma.user.create({
+    user = await prisma.user.create({
       data: {
         username: process.env.USER as string,
         password: await hash(process.env.PASSWORD as string, 10),
@@ -21,7 +22,7 @@ async function main (): Promise<void> {
         secretKey: encrypt(process.env.SECRET_KEY as string)
       }
     })
-    console.log(newUser)
+    console.log(user)
 
     const newSymbol = await prisma.symbol.create({
       data: {
@@ -33,13 +34,48 @@ async function main (): Promise<void> {
         minNotional: '0.1',
         minLotSize: '0.1',
         isFavorite: true,
-        userId: newUser.id
+        userId: user.id
       }
     })
 
     console.log(newSymbol)
   } else {
     console.log(user)
+  }
+
+  const monitors = await prisma.monitor.findFirst({ where: { symbol: '*' } })
+
+  if (!monitors) {
+    await prisma.monitor.createMany({
+      data: [
+        {
+          symbol: '*',
+          userId: user.id,
+          type: MonitorTypes.MINI_TICKER,
+          isActive: true,
+          isSystemMonitor: true,
+          broadcastLabel: 'miniTickerStream'
+        },
+        {
+          symbol: '*',
+          userId: user.id,
+          type: MonitorTypes.USER_DATA,
+          isActive: true,
+          isSystemMonitor: true,
+          broadcastLabel: 'balanceStream,executionStream'
+        },
+        {
+          symbol: 'BTCBUSD',
+          userId: user.id,
+          type: MonitorTypes.CANDLES,
+          isActive: true,
+          isSystemMonitor: false,
+          indexes: 'RSI,MACD',
+          interval: '1m'
+        }
+
+      ]
+    })
   }
 }
 

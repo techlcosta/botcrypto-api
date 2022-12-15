@@ -1,8 +1,9 @@
 import { Request, Response } from 'express'
+import { AesCrypto } from '../../../helpers/adapters/aesCrypto/aesCrypto-adapter'
+import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/functions/nodeBinanceApi-adapter'
 import { UsersRepository } from '../../users/repositories/users-repository'
-import { AesCrypto } from './../../../helpers/adapters/aesCrypto'
+
 import { GetSettingsDecrypted } from './../../../helpers/utils/getSettingsDecrypted'
-import { ExchangeRepository } from './../repositories/exchange-repository'
 import { GetBalaceUseCase } from './../use-cases/getBalance-useCase'
 
 export class GetBalanceController {
@@ -15,9 +16,9 @@ export class GetBalanceController {
 
     const getSettingsDecrypted = new GetSettingsDecrypted(usersRepository, aesCrypto)
 
-    const exchangeRepository = new ExchangeRepository()
+    const nodeBinanceApiAdapter = new NodeBinanceApiAdapter()
 
-    const getBalaceUseCase = new GetBalaceUseCase(getSettingsDecrypted, exchangeRepository)
+    const getBalaceUseCase = new GetBalaceUseCase(getSettingsDecrypted, nodeBinanceApiAdapter)
 
     const balance = await getBalaceUseCase.execute({ id })
 

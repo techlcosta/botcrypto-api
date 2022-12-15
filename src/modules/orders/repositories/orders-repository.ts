@@ -1,8 +1,8 @@
 import { prisma } from '../../../prisma'
-import { InputCountOrdersInterface, InputCreateOrdersInterface, InputFindByIdInterface, InputFindByOrderIdAndClieantIdInterface, InputFindByUserIdInterface, InputGetOrdersInterface, InputUpdateOrdersInterface, OrderInterface, OrdersRepositoryInterface } from './../interfaces/orders-interface'
+import { InputCountOrdersInterface, InputCreateOrdersInterface, InputFindByUserIdInterface, InputFindOrderByIdInterface, InputFindOrderByOrderIdAndClientIdInterface, InputGetOrdersInterface, InputUpdateOrdersInterface, OrderInterface, OrdersRepositoryInterface } from './../interfaces/orders-interface'
 
 export class OrdersRepository implements OrdersRepositoryInterface {
-  async findById ({ userId, id }: InputFindByIdInterface): Promise<OrderInterface | null> {
+  async findById ({ userId, id }: InputFindOrderByIdInterface): Promise<OrderInterface | null> {
     const order = await prisma.order.findFirst({
       where: {
         userId,
@@ -23,7 +23,7 @@ export class OrdersRepository implements OrdersRepositoryInterface {
     return orders
   }
 
-  async findByOrderIdAndClieantId ({ orderId, clientOrderId, userId }: InputFindByOrderIdAndClieantIdInterface): Promise<OrderInterface | null> {
+  async findByOrderIdAndClieantId ({ orderId, clientOrderId, userId }: InputFindOrderByOrderIdAndClientIdInterface): Promise<OrderInterface | null> {
     const order = await prisma.order.findFirst({
       where: {
         orderId,

@@ -1,5 +1,6 @@
+import { NodeBinanceApiAdapterInterface, OutputOrderStatusInterface, OutputOrdertradeInterface } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
-import { ExchangeRepositoryInterface, ResponseOrderStatusInterface, ResponseOrdertradeInterface } from '../../exchange/interfaces/exchange-interface'
+
 import { OrdersRepositoryInterface } from '../interfaces/orders-interface'
 import { AppError } from './../../../helpers/errors/appError'
 import { OrderInterface } from './../interfaces/orders-interface'
@@ -11,7 +12,7 @@ interface RequestSyncOrderInterface {
 export class SyncOrderUseCase {
   constructor (
     private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
-    private readonly exchangeRepository: ExchangeRepositoryInterface,
+    private readonly nodeBinanceApiAdapter: NodeBinanceApiAdapterInterface,
     private readonly ordersRepository: OrdersRepositoryInterface
   ) { }
 
@@ -22,14 +23,12 @@ export class SyncOrderUseCase {
 
     if (!order) throw new AppError('Order not found!')
 
-    let orderTrade: ResponseOrdertradeInterface
+    let orderTrade: OutputOrdertradeInterface
 
-    let orderStatus: ResponseOrderStatusInterface
+    let orderStatus: OutputOrderStatusInterface
 
     try {
-      await this.exchangeRepository.setSettings(settings)
-
-      orderStatus = await this.exchangeRepository.orderStatus({ orderId: order.orderId, symbol: order.symbol })
+      orderStatus = await this.nodeBinanceApiAdapter.orderStatus({ orderId: order.orderId, symbol: order.symbol, settings })
 
       if (orderStatus.status !== 'FILLED') {
         const updatedOrder = await this.ordersRepository.update({
@@ -41,7 +40,7 @@ export class SyncOrderUseCase {
         return updatedOrder
       }
 
-      orderTrade = await this.exchangeRepository.orderTrade({ orderId: order.orderId, symbol: order.symbol })
+      orderTrade = await this.nodeBinanceApiAdapter.orderTrade({ orderId: order.orderId, symbol: order.symbol, settings })
     } catch (error: any) {
       console.error(error)
 

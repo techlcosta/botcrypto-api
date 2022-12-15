@@ -1,5 +1,6 @@
+import { NodeBinanceApiAdapterInterface, OutputBalanceInterface } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
-import { ExchangeRepositoryInterface } from './../interfaces/exchange-interface'
+import { AppError } from './../../../helpers/errors/appError'
 
 interface GetBalanceUseCaseRequestInterface {
   id: string
@@ -7,16 +8,22 @@ interface GetBalanceUseCaseRequestInterface {
 export class GetBalaceUseCase {
   constructor (
     private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
-    private readonly exchangeRepository: ExchangeRepositoryInterface
+    private readonly exchangeAdapter: NodeBinanceApiAdapterInterface
   ) { }
 
   async execute ({ id }: GetBalanceUseCaseRequestInterface): Promise<any> {
     const settings = await this.getSettingsDecrypted.handle({ userId: id })
 
-    await this.exchangeRepository.setSettings(settings)
+    const balance = await this.exchangeAdapter.exchangeBalance(settings).catch(err => { throw new AppError(err.message || err.body) })
 
-    const balance = await this.exchangeRepository.exchangeBalance()
+    const balanceWallet = Object.entries(balance as OutputBalanceInterface).map(([key, value]) => {
+      return {
+        symbol: key,
+        available: value.available,
+        onOrder: value.onOrder
+      }
+    })
 
-    return balance
+    return balanceWallet
   }
 }

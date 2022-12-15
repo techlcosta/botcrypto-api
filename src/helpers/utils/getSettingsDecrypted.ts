@@ -1,6 +1,6 @@
-import { AesCryptoAdapterInterface } from '../adapters/aesCrypto'
+import { AesCryptoAdapterInterface } from '../adapters/aesCrypto/aesCrypto-adapter'
+import { SettingsInterface } from '../adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
 import { AppError } from '../errors/appError'
-import { SettingsInterface } from './../../modules/exchange/interfaces/exchange-interface'
 import { UsersRepositoryInterface } from './../../modules/users/interfaces/users-interface'
 
 interface InputGetSettingsDecryptedInterface {

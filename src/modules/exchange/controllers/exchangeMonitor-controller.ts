@@ -1,29 +1,38 @@
-import WebSocket from 'ws'
-import { AesCrypto } from '../../../helpers/adapters/aesCrypto'
+import { AesCrypto } from '../../../helpers/adapters/aesCrypto/aesCrypto-adapter'
+import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/functions/nodeBinanceApi-adapter'
 import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypted'
 import { OrdersRepository } from '../../orders/repositories/orders-repository'
 import { UsersRepository } from '../../users/repositories/users-repository'
-import { ExchangeRepository } from '../repositories/exchange-repository'
+import { ExchangeActions } from '../actions/exchange-actions'
 import { ExchangeMonitorUseCase } from '../use-cases/exchangeMonitor-useCase'
+import { WebSocketServer } from './../../../app-ws'
+import { MonitorsRepository } from './../../monitors/repositories/monitors-repository'
 
 interface ExchangeMonitorControllerRequestInterface {
-  userProtocol: string
-  wssServer: WebSocket.Server<WebSocket.WebSocket>
+  server: any
 }
 
 export class ExchangeMonitorController {
-  async handle ({ userProtocol, wssServer }: ExchangeMonitorControllerRequestInterface): Promise<void> {
-    const usersRepository = new UsersRepository()
-
+  async handle ({ server }: ExchangeMonitorControllerRequestInterface): Promise<void> {
     const aesCrypto = new AesCrypto()
 
-    const getSettingsDecrypted = new GetSettingsDecrypted(usersRepository, aesCrypto)
-
-    const exchangeRepository = new ExchangeRepository()
+    const usersRepository = new UsersRepository()
 
     const ordersRepository = new OrdersRepository()
 
-    const exchangeMonitorUseCase = new ExchangeMonitorUseCase(userProtocol, wssServer, getSettingsDecrypted, exchangeRepository, ordersRepository)
+    const monitorsRepository = new MonitorsRepository()
+
+    const nodeBinanceApiAdapter = new NodeBinanceApiAdapter()
+
+    const webSocketServer = new WebSocketServer(usersRepository)
+
+    const getSettingsDecrypted = new GetSettingsDecrypted(usersRepository, aesCrypto)
+
+    const exchangeActions = new ExchangeActions(nodeBinanceApiAdapter, ordersRepository)
+
+    const exchangeMonitorUseCase = new ExchangeMonitorUseCase(webSocketServer, monitorsRepository, getSettingsDecrypted, exchangeActions)
+
+    await webSocketServer.execute(server)
 
     await exchangeMonitorUseCase.execute()
   }

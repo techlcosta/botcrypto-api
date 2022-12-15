@@ -1,22 +1,21 @@
+import { NodeBinanceApiAdapterInterface } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 import { SymbolsRepositoryInterface } from '../interfaces/symbols-interface'
-import { ExchangeRepositoryInterface } from './../../exchange/interfaces/exchange-interface'
+
 import { InputUpdateSymbolsInterface } from './../interfaces/symbols-interface'
 
 export class SyncSymbolsUseCase {
   constructor (
     private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
     private readonly symbolsRepository: SymbolsRepositoryInterface,
-    private readonly exchangeRepository: ExchangeRepositoryInterface
+    private readonly nodeBinanceApiAdapter: NodeBinanceApiAdapterInterface
 
   ) { }
 
   async execute (id: string): Promise<void> {
     const settings = await this.getSettingsDecrypted.handle({ userId: id })
 
-    await this.exchangeRepository.setSettings(settings)
-
-    const exchangeInfo = await this.exchangeRepository.exchangeInfo()
+    const exchangeInfo = await this.nodeBinanceApiAdapter.exchangeInfo(settings)
 
     const symbols: InputUpdateSymbolsInterface[] = exchangeInfo.symbols.map((symbol: any): InputUpdateSymbolsInterface => {
       const minNotionalFilter = symbol.filters.find((f: any) => f.filterType === 'MIN_NOTIONAL')

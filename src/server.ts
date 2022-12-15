@@ -1,8 +1,10 @@
 import { app } from './app'
-import { WebSocketServer } from './app-ws'
+import { ExchangeMonitorController } from './modules/exchange/controllers/exchangeMonitor-controller'
 
-export const server = app.listen(process.env.PORT, () => {
+const server = app.listen(process.env.PORT, () => {
   console.log(`server is running! ${process.env.PORT as string}`)
 })
 
-WebSocketServer(server)
+const exchangeMonitor = new ExchangeMonitorController()
+
+exchangeMonitor.handle({ server }).catch(err => console.error(err))

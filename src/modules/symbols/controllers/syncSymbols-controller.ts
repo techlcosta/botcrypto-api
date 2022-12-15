@@ -1,7 +1,8 @@
 import { Request, Response } from 'express'
-import { AesCrypto } from '../../../helpers/adapters/aesCrypto'
+import { AesCrypto } from '../../../helpers/adapters/aesCrypto/aesCrypto-adapter'
+import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/functions/nodeBinanceApi-adapter'
 import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypted'
-import { ExchangeRepository } from '../../exchange/repositories/exchange-repository'
+
 import { UsersRepository } from '../../users/repositories/users-repository'
 import { SymbolsRepository } from '../repositories/symbols-repository'
 import { SyncSymbolsUseCase } from './../use-cases/syncSymbols-useCase'
@@ -17,9 +18,9 @@ export class SyncSymbolsController {
 
     const symbolsRepository = new SymbolsRepository()
 
-    const exchangeRepository = new ExchangeRepository()
+    const nodeBinanceApiAdapter = new NodeBinanceApiAdapter()
 
-    const syncSymbolsUseCase = new SyncSymbolsUseCase(getSettingsDecrypted, symbolsRepository, exchangeRepository)
+    const syncSymbolsUseCase = new SyncSymbolsUseCase(getSettingsDecrypted, symbolsRepository, nodeBinanceApiAdapter)
 
     await syncSymbolsUseCase.execute(id)
 

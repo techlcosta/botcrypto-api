@@ -17,9 +17,9 @@ export class GetOdersUseCase {
   async execute ({ userId, symbol, page }: RequestGetOrdersInterface): Promise<ResponseGetOrdersInterface> {
     const orders = await this.ordersRepository.get({ userId, symbol, page })
 
-    const countOrders = await this.ordersRepository.count({ userId, symbol })
+    const count = await this.ordersRepository.count({ userId, symbol })
 
-    const pages = Math.ceil(countOrders / 10)
+    const pages = Math.ceil(count / 10)
 
     return {
       orders,

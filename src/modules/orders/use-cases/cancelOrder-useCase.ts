@@ -1,6 +1,7 @@
+import { NodeBinanceApiAdapterInterface } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
 import { AppError } from '../../../helpers/errors/appError'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
-import { ExchangeRepositoryInterface } from '../../exchange/interfaces/exchange-interface'
+
 import { OrderInterface, OrdersRepositoryInterface } from '../interfaces/orders-interface'
 
 interface RequestCancelOrderUseCaseInterface {
@@ -28,17 +29,15 @@ interface ResponseCancelOrderBinanceInterface {
 export class CancelOrderUseCase {
   constructor (
     private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
-    private readonly exchangeRepository: ExchangeRepositoryInterface,
+    private readonly nodeBinanceApiAdapter: NodeBinanceApiAdapterInterface,
     private readonly ordersRepository: OrdersRepositoryInterface
   ) { }
 
   async execute ({ symbol, orderId, userId }: RequestCancelOrderUseCaseInterface): Promise<OrderInterface> {
     const settings = await this.getSettingsDecrypted.handle({ userId })
 
-    await this.exchangeRepository.setSettings(settings)
-
     try {
-      const response: ResponseCancelOrderBinanceInterface = await this.exchangeRepository.cancel({ symbol, orderId: Number(orderId) })
+      const response: ResponseCancelOrderBinanceInterface = await this.nodeBinanceApiAdapter.cancel({ symbol, orderId: Number(orderId), settings })
 
       const order = await this.ordersRepository.update({
         clientOrderId: response.origClientOrderId,

@@ -23,7 +23,7 @@ export interface OrderInterface {
   createdAt: Date
 }
 
-export interface InputFindByIdInterface {
+export interface InputFindOrderByIdInterface {
   userId: string
   id: string
 }
@@ -44,7 +44,7 @@ export interface InputGetOrdersInterface {
   userId: string
 }
 
-export interface InputFindByOrderIdAndClieantIdInterface {
+export interface InputFindOrderByOrderIdAndClientIdInterface {
   orderId: number
   clientOrderId: string
   userId: string
@@ -92,10 +92,10 @@ export interface InputUpdateOrdersInterface {
 }
 
 export interface OrdersRepositoryInterface {
-  findById: ({ id, userId }: InputFindByIdInterface) => Promise<OrderInterface | null>
-  findByUserId: ({ userId }: InputFindByUserIdInterface) => Promise<OrderInterface[] | null>
-  findByOrderIdAndClieantId: ({ orderId, clientOrderId }: InputFindByOrderIdAndClieantIdInterface) => Promise<OrderInterface | null>
-  count: ({ symbol, userId }: InputCountOrdersInterface) => Promise<number>
+  findById: (data: InputFindOrderByIdInterface) => Promise<OrderInterface | null>
+  findByUserId: (data: InputFindByUserIdInterface) => Promise<OrderInterface[] | null>
+  findByOrderIdAndClieantId: (data: InputFindOrderByOrderIdAndClientIdInterface) => Promise<OrderInterface | null>
+  count: (data: InputCountOrdersInterface) => Promise<number>
   get: (data: InputGetOrdersInterface) => Promise<OrderInterface[]>
   create: (data: InputCreateOrdersInterface) => Promise<void>
   update: (data: InputUpdateOrdersInterface) => Promise<OrderInterface>

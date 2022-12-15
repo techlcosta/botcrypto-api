@@ -35,7 +35,7 @@ export interface InputUpdateUserInterface {
 }
 
 export interface UsersRepositoryInterface {
-  findById: ({ id }: InputFindUserByIdInterface) => Promise<UserInterface | null>
-  findByUser: ({ username }: InputFindUserByUserNameInterface) => Promise<UserInterface | null>
+  findById: (data: InputFindUserByIdInterface) => Promise<UserInterface | null>
+  findByUser: (data: InputFindUserByUserNameInterface) => Promise<UserInterface | null>
   update: (data: InputUpdateUserInterface) => Promise<UserInterface>
 }

@@ -11,17 +11,18 @@ datasource db {
 }
 
 model User {
-  id        String   @id @unique @default(uuid())
-  username  String   @unique
+  id        String    @id @unique @default(uuid())
+  username  String    @unique
   password  String
   apiURL    String
   streamURL String
   accessKey String
   secretKey String
   Order     Order[]
-  updatedAt DateTime @default(now()) @updatedAt
-  createdAt DateTime @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  createdAt DateTime  @default(now())
   Symbol    Symbol[]
+  Monitor   Monitor[]
 
   @@map("users")
 }
@@ -69,6 +70,26 @@ model Order {
   updatedAt       DateTime @default(now()) @updatedAt
   createdAt       DateTime @default(now())
 
-  @@index([symbol], map: "order_symbol_index")
+  @@index([symbol])
   @@map("Orders")
+}
+
+model Monitor {
+  id              String   @id @unique @default(uuid())
+  symbol          String   @default("*")
+  type            String
+  isActive        Boolean  @default(false)
+  isSystemMonitor Boolean  @default(false)
+  showLogs        Boolean  @default(false)
+  broadcastLabel  String?
+  interval        String?
+  indexes         String?
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  updatedAt       DateTime @default(now()) @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@unique([type, symbol, interval, userId])
+  @@index([symbol])
+  @@map("Monitors")
 }

@@ -9,7 +9,7 @@ export class SymbolsRepository implements SymbolsRepositoryInterface {
         userId,
         symbol: symbol && symbol.length > 6
           ? symbol
-          : { contains: symbol },
+          : { endsWith: symbol },
         isFavorite: onlyFavorites && true
       },
       take: page && take,
@@ -25,7 +25,7 @@ export class SymbolsRepository implements SymbolsRepositoryInterface {
         userId,
         symbol: symbol && symbol.length > 6
           ? symbol
-          : { contains: symbol },
+          : { endsWith: symbol },
         isFavorite: onlyFavorites && true
       }
     })

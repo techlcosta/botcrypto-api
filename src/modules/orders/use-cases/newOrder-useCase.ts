@@ -1,20 +1,21 @@
+import { NodeBinanceApiAdapterInterface, SideOrderTypes, TypeOrderTypes } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
 import { AppError } from '../../../helpers/errors/appError'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
-import { ExchangeRepositoryInterface, SideOrderType, TypeOrderType } from '../../exchange/interfaces/exchange-interface'
+
 import { OrdersRepositoryInterface } from '../interfaces/orders-interface'
 
 interface RequestNewOrderInterface {
-  side: SideOrderType
+  side: SideOrderTypes
   symbol: string
   quantity: string
   limitPrice?: string
-  type: TypeOrderType
+  type: TypeOrderTypes
   automationId?: string
   isMaker: boolean
   options: {
     stopPrice?: string
     icebergQuantity?: string
-    type: string
+    type: TypeOrderTypes
   }
   userId: string
 }
@@ -34,14 +35,12 @@ interface ResponseNewOrderBinanceInterface {
 export class NewOrderUseCase {
   constructor (
     private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
-    private readonly exchangeRepository: ExchangeRepositoryInterface,
+    private readonly nodeBinanceApiAdapter: NodeBinanceApiAdapterInterface,
     private readonly ordersRepository: OrdersRepositoryInterface
   ) { }
 
   async execute ({ side, symbol, quantity, limitPrice, type, options, automationId, isMaker, userId }: RequestNewOrderInterface): Promise<void> {
     const settings = await this.getSettingsDecrypted.handle({ userId })
-
-    await this.exchangeRepository.setSettings(settings)
 
     const price = limitPrice ? parseFloat(limitPrice) : undefined
 
@@ -49,11 +48,11 @@ export class NewOrderUseCase {
 
     try {
       if (side === 'BUY') {
-        response = await this.exchangeRepository.buy({ symbol, quantity: parseFloat(quantity), price, options: { type: options.type }, type })
+        response = await this.nodeBinanceApiAdapter.buy({ symbol, quantity: parseFloat(quantity), price, options: { type: options.type }, type, settings })
       }
 
       if (side === 'SELL') {
-        response = await this.exchangeRepository.sell({ symbol, quantity: parseFloat(quantity), price, options: { type: options.type }, type })
+        response = await this.nodeBinanceApiAdapter.sell({ symbol, quantity: parseFloat(quantity), price, options: { type: options.type }, type, settings })
       }
     } catch (error: any) {
       console.log(error)
@@ -61,7 +60,6 @@ export class NewOrderUseCase {
     }
 
     if (response) {
-      console.log(response)
       await this.ordersRepository.create({
         side,
         symbol,
