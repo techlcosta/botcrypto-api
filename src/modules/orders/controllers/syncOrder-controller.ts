@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { AesCrypto } from '../../../helpers/adapters/aesCrypto/aesCrypto-adapter'
-import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/functions/nodeBinanceApi-adapter'
+import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-adapter'
 import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypted'
 
 import { UsersRepository } from '../../users/repositories/users-repository'

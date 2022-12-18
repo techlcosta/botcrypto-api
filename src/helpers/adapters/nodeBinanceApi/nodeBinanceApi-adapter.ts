@@ -1,16 +1,16 @@
 import Binance from 'node-binance-api'
-import { InputCancelInterface, InputChartStreamInterface, InputNewOrderInterface, InputOrderStatusInterface, InputOrderTradeInterface, NodeBinanceApiAdapterInterface, OutputOHLCInterface, OutputOrderStatusInterface, OutputOrdertradeInterface, SettingsInterface, _callback } from '../interfaces/nodeBinanceApi-Interface'
+import { InputCancelInterface, InputChartStreamInterface, InputNewOrderInterface, InputOrderStatusInterface, InputOrderTradeInterface, NodeBinanceApiAdapterInterface, OutputOHLCInterface, OutputOrderStatusInterface, OutputOrdertradeInterface, SettingsInterface, _asyncCallback, _callback } from './nodeBinanceApi-Interface'
 
 export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
   instances: Binance[] = []
 
-  private async setSettings (settings: SettingsInterface): Promise<Binance> {
+  private async setSettings (settings?: SettingsInterface): Promise<Binance> {
     let binance: Binance | null = null
 
     for (const instance of this.instances) {
       const options = await instance.getOptions()
 
-      if (options.APIKEY === settings.APIKEY && options.APISECRET === settings.APISECRET) {
+      if (settings && options.APIKEY === settings.APIKEY && options.APISECRET === settings.APISECRET) {
         binance = instance
         break
       }
@@ -107,10 +107,16 @@ export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
     return response
   }
 
-  async miniTickerStream (callback: _callback, settings: SettingsInterface): Promise<void> {
-    const binance = await this.setSettings(settings)
+  async miniTickerStream (callback: _callback): Promise<void> {
+    const binance = await this.setSettings()
 
     binance.websockets.miniTicker((market: any) => callback(market))
+  }
+
+  async tickerStream (callback: _asyncCallback): Promise<void> {
+    const binance = await this.setSettings()
+
+    binance.websockets.prevDay(null, async (data: any, converted: any) => await callback(converted), true)
   }
 
   async chartStream (data: InputChartStreamInterface): Promise<void> {

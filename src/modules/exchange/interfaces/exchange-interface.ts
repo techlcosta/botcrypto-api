@@ -1,9 +1,14 @@
-import { SettingsInterface } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
+import { SettingsInterface } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
 
 export interface InputStartMiniTickerMonitorInterface {
-  settings: SettingsInterface
   showLogs: boolean
-  broadcastLabel?: string
+  broadcastLabel: string
+  broadcast: (data: Object) => void
+}
+
+export interface InputStartTickerMonitorInterface {
+  showLogs: boolean
+  broadcastLabel: string
   broadcast: (data: Object) => void
 }
 export interface InputStartUserDataMonitorInterface {
@@ -27,6 +32,7 @@ export interface InputStartChartMonitorInterface {
 }
 
 export interface ExchangeActionsInterface {
+  startTickerAndBookMonitor: (data: InputStartTickerMonitorInterface) => Promise<void>
   startMiniTickerMonitor: (data: InputStartMiniTickerMonitorInterface) => Promise<void>
   startUserDataMonitor: (data: InputStartUserDataMonitorInterface) => Promise<void>
   startChartMonitor: (data: InputStartChartMonitorInterface) => Promise<void>

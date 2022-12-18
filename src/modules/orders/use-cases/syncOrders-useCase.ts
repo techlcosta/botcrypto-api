@@ -1,4 +1,4 @@
-import { NodeBinanceApiAdapterInterface, OutputOrderStatusInterface, OutputOrdertradeInterface } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
+import { NodeBinanceApiAdapterInterface, OutputOrderStatusInterface, OutputOrdertradeInterface } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 
 import { OrdersRepositoryInterface } from '../interfaces/orders-interface'

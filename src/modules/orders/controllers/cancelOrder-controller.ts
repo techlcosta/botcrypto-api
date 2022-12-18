@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { AesCrypto } from '../../../helpers/adapters/aesCrypto/aesCrypto-adapter'
-import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/functions/nodeBinanceApi-adapter'
+import { BinanceApiNodeAdapter } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-adapter'
 import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypted'
 import { UsersRepository } from '../../users/repositories/users-repository'
 import { OrdersRepository } from '../repositories/orders-repository'
@@ -18,11 +18,11 @@ export class CancelOrderController {
 
     const getSettingsDecrypted = new GetSettingsDecrypted(usersRepository, aesCrypto)
 
-    const nodeBinanceApiAdapter = new NodeBinanceApiAdapter()
+    const binanceApiNodeAdapter = new BinanceApiNodeAdapter()
 
     const ordersRepository = new OrdersRepository()
 
-    const cancelOrderUseCase = new CancelOrderUseCase(getSettingsDecrypted, nodeBinanceApiAdapter, ordersRepository)
+    const cancelOrderUseCase = new CancelOrderUseCase(getSettingsDecrypted, binanceApiNodeAdapter, ordersRepository)
 
     const order = await cancelOrderUseCase.execute({
       userId,

@@ -1,4 +1,4 @@
-import { NodeBinanceApiAdapterInterface } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
+import { BinanceApiNodeAdapterInterface } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-interface'
 import { AppError } from '../../../helpers/errors/appError'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 
@@ -29,7 +29,7 @@ interface ResponseCancelOrderBinanceInterface {
 export class CancelOrderUseCase {
   constructor (
     private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
-    private readonly nodeBinanceApiAdapter: NodeBinanceApiAdapterInterface,
+    private readonly binanceApiNodeAdapter: BinanceApiNodeAdapterInterface,
     private readonly ordersRepository: OrdersRepositoryInterface
   ) { }
 
@@ -37,7 +37,7 @@ export class CancelOrderUseCase {
     const settings = await this.getSettingsDecrypted.handle({ userId })
 
     try {
-      const response: ResponseCancelOrderBinanceInterface = await this.nodeBinanceApiAdapter.cancel({ symbol, orderId: Number(orderId), settings })
+      const response: ResponseCancelOrderBinanceInterface = await this.binanceApiNodeAdapter.cancel({ symbol, orderId: Number(orderId), settings })
 
       const order = await this.ordersRepository.update({
         clientOrderId: response.origClientOrderId,

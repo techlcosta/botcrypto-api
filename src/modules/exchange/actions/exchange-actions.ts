@@ -1,7 +1,11 @@
-import { NodeBinanceApiAdapterInterface, OutputBalanceInterface, OutputExecutionReportInterface, OutputMiniTickerStream, OutputOHLCInterface, SettingsInterface } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
-import { InputUpdateOrdersInterface, OrdersRepositoryInterface } from '../../orders/interfaces/orders-interface'
-import { ExchangeActionsInterface, InputStartChartMonitorInterface, InputStartMiniTickerMonitorInterface, InputStartUserDataMonitorInterface } from './../interfaces/exchange-interface'
 
+import { UserDataStreamEvent } from 'binance-api-node'
+import { BinanceApiNodeAdapterInterface } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-interface'
+import { NodeBinanceApiAdapterInterface, OutputOHLCInterface, SettingsInterface } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
+import { AppError } from '../../../helpers/errors/appError'
+import { InputUpdateOrdersInterface, OrdersRepositoryInterface } from '../../orders/interfaces/orders-interface'
+import { RobotRepositoryInterface } from '../../robot/interfaces/robot-interface'
+import { ExchangeActionsInterface, InputStartChartMonitorInterface, InputStartMiniTickerMonitorInterface, InputStartTickerMonitorInterface, InputStartUserDataMonitorInterface } from './../interfaces/exchange-interface'
 interface InputProcessChartInterface {
   symbol: string
   interval: string
@@ -9,20 +13,25 @@ interface InputProcessChartInterface {
   ohlc: OutputOHLCInterface
 }
 
+type InputOnExecutionType = InputStartUserDataMonitorInterface
+
 export class ExchangeActions implements ExchangeActionsInterface {
   constructor (
     private readonly nodeBinanceApiAdapter: NodeBinanceApiAdapterInterface,
-    private readonly ordersRepository: OrdersRepositoryInterface
-  ) { }
+    private readonly binanceApiNodeAdapter: BinanceApiNodeAdapterInterface,
+    private readonly ordersRepository: OrdersRepositoryInterface,
+    private readonly robotRepository: RobotRepositoryInterface
+
+  ) {}
 
   private async loadWallet (settings: SettingsInterface): Promise<any> {
-    const balance = await this.nodeBinanceApiAdapter.exchangeBalance(settings).catch(err => console.error(err))
+    const balance = await this.binanceApiNodeAdapter.exchangeBalance(settings).catch(err => { throw new AppError(err.message || err.body) })
 
-    const balanceWallet = Object.entries(balance as OutputBalanceInterface).map(([key, value]) => {
+    const balanceWallet = balance.balances.map((value) => {
       return {
-        symbol: key,
-        available: value.available,
-        onOrder: value.onOrder
+        symbol: value.asset,
+        available: value.free,
+        onOrder: value.locked
       }
     })
 
@@ -30,94 +39,115 @@ export class ExchangeActions implements ExchangeActionsInterface {
   }
 
   private async processChart (data: InputProcessChartInterface): Promise<void> {
-    console.log(data.symbol)
+    console.log(data.ohlc)
+  }
+
+  private async onExecution (execution: UserDataStreamEvent, data: InputOnExecutionType): Promise<void> {
+    const { userId, broadcastLabel, showLogs, direct, settings } = data
+
+    const [balanceStream, executionStream] = broadcastLabel.split(',')
+
+    if (execution.eventType === 'outboundAccountPosition') {
+      this.loadWallet(settings)
+        .then((balance) => {
+          direct(userId, { [balanceStream]: balance })
+        })
+        .catch(err => console.error(err))
+    }
+
+    if (execution.eventType === 'executionReport') {
+      if (showLogs) console.log(execution)
+      new Promise<void>((resolve) => {
+        setTimeout(async () => {
+          if (execution.executionType === 'NEW') return
+
+          const clientOrderId = execution.orderStatus === 'CANCELED' ? (execution.originalClientOrderId as string) : execution.newClientOrderId
+
+          const alredyExists = await this.ordersRepository.findByOrderIdAndClieantId({ userId, clientOrderId, orderId: execution.orderId })
+
+          if (!alredyExists) return
+
+          const orderUpadte: InputUpdateOrdersInterface = {
+            clientOrderId,
+            quantity: execution.quantity,
+            side: execution.side,
+            type: execution.orderType,
+            status: execution.orderStatus !== alredyExists.status && (alredyExists.status === 'NEW' || alredyExists.status === 'PARTIALLY_FILLED') ? execution.orderStatus : alredyExists.status,
+            isMaker: execution.isBuyerMaker,
+            transactionTime: String(execution.orderTime)
+          }
+
+          if (execution.orderType !== 'MARKET') orderUpadte.limitPrice = execution.price
+
+          if (execution.orderStatus === 'FILLED') {
+            const quoteAmount = parseFloat(execution.totalQuoteTradeQuantity)
+            orderUpadte.avgPrice = String((quoteAmount / parseFloat(execution.totalTradeQuantity)))
+            orderUpadte.comission = execution.commission
+            const isQuoteComission = execution.commissionAsset && execution.symbol.endsWith(execution.commissionAsset)
+            orderUpadte.net = isQuoteComission ? String((quoteAmount - parseFloat(execution.commission))) : String(quoteAmount)
+            orderUpadte.status = execution.orderStatus
+          }
+
+          if (execution.orderStatus === 'REJECTED') orderUpadte.obs = execution.orderRejectReason
+
+          const order = await this.ordersRepository.update(orderUpadte).catch(err => direct(userId, { error: err }))
+          direct(userId, { [executionStream]: order })
+
+          return resolve()
+        }, 1000)
+      }).catch(err => console.log(err))
+    }
   }
 
   async startMiniTickerMonitor (data: InputStartMiniTickerMonitorInterface): Promise<void> {
-    const { showLogs, broadcastLabel, broadcast, settings } = data
+    const { showLogs, broadcastLabel, broadcast } = data
 
-    await this.nodeBinanceApiAdapter.miniTickerStream((market) => {
-      if (showLogs) console.log(market)
+    await this.binanceApiNodeAdapter.miniTickerStream(async (market) => {
+      const miniTicker = market.reduce((acc, current) => {
+        return { ...acc, [current.symbol]: current }
+      }, {})
 
-      if (broadcastLabel) broadcast({ [broadcastLabel]: market })
+      if (showLogs) console.log(miniTicker)
 
-      const book = Object.entries(market as OutputMiniTickerStream).map(([key, value]) => {
-        return { symbol: key, bestAsk: value.close, bestBid: value.close }
-      })
+      if (broadcastLabel) broadcast({ [broadcastLabel]: miniTicker })
 
-      if (broadcastLabel) broadcast({ bookStream: book })
-    }, settings)
+      for (const item of market) {
+        await this.robotRepository.updateRobotMemory({ symbol: item.symbol, index: 'MINI_TICKER', value: item }).catch(err => console.log(err))
+      }
+    })
 
     console.log(`Mini Ticker monitor has started at ${broadcastLabel ?? ''}`)
   }
 
+  async startTickerAndBookMonitor (data: InputStartTickerMonitorInterface): Promise<void> {
+    const { showLogs, broadcastLabel, broadcast } = data
+
+    const [ticker, books] = broadcastLabel?.split(',')
+
+    await this.binanceApiNodeAdapter.tickerStream(async (market) => {
+      if (showLogs) console.log(market)
+
+      broadcast({ [ticker]: market })
+
+      for (const item of market) {
+        this.robotRepository.updateRobotMemory({ symbol: item.symbol, index: 'TICKER', value: item }).catch(err => console.log(err))
+
+        const book = { symbol: item.symbol, bestAsk: item.bestAsk, bestBid: item.bestBid }
+
+        broadcast({ [books]: book })
+      }
+    })
+
+    console.log(`Ticker and Book monitor has started at ${broadcastLabel ?? ''}`)
+  }
+
   async startUserDataMonitor (data: InputStartUserDataMonitorInterface): Promise<void> {
-    const { userId, showLogs, broadcastLabel, direct, settings } = data
+    await this.binanceApiNodeAdapter.userDataStream({
+      settings: data.settings,
+      callback: async (execution) => await this.onExecution(execution, data)
+    })
 
-    const [balanceStream, executionStream] = broadcastLabel.split(',')
-
-    await this.nodeBinanceApiAdapter.userDataStream(
-      (data) => {
-        if (showLogs) console.log(data)
-
-        if (data.e === 'outboundAccountPosition') {
-          this.loadWallet(settings)
-            .then((balance) => {
-              direct(userId, { [balanceStream]: balance })
-            })
-            .catch(err => console.error(err))
-        }
-
-        if (data.e === 'executionReport') {
-          const execution: OutputExecutionReportInterface = data
-
-          new Promise<void>((resolve) => {
-            setTimeout(async () => {
-              if (execution.x === 'NEW') return
-
-              const clientOrderId = execution.X === 'CANCELED' ? execution.C : execution.c
-
-              const alredyExists = await this.ordersRepository.findByOrderIdAndClieantId({ userId, clientOrderId, orderId: execution.i })
-
-              if (!alredyExists) return
-
-              const orderUpadte: InputUpdateOrdersInterface = {
-                clientOrderId,
-                quantity: execution.q,
-                side: execution.S,
-                type: execution.o,
-                status: execution.X !== alredyExists.status && (alredyExists.status === 'NEW' || alredyExists.status === 'PARTIALLY_FILLED') ? execution.X : alredyExists.status,
-                isMaker: execution.m,
-                transactionTime: String(execution.T)
-              }
-
-              if (execution.o !== 'MARKET') orderUpadte.limitPrice = execution.p
-
-              if (execution.X === 'FILLED') {
-                const quoteAmount = parseFloat(execution.Z)
-                orderUpadte.avgPrice = String((quoteAmount / parseFloat(execution.z)))
-                orderUpadte.comission = execution.n
-                const isQuoteComission = execution.N && execution.s.endsWith(execution.N)
-                orderUpadte.net = isQuoteComission ? String((quoteAmount - parseFloat(execution.n))) : String(quoteAmount)
-                orderUpadte.status = execution.X
-              }
-
-              if (execution.X === 'REJECTED') orderUpadte.obs = execution.r
-
-              const order = await this.ordersRepository.update(orderUpadte).catch(err => direct(userId, { error: err }))
-              direct(userId, { [executionStream]: order })
-
-              return resolve()
-            }, 1000)
-          }).catch(err => console.log(err))
-        }
-      },
-      true,
-      listStatus => console.log(listStatus),
-      settings
-    )
-
-    console.log(`User Data monitor by userId:${userId} has started at ${broadcastLabel ?? ''}`)
+    console.log(`User Data monitor by userId:${data.userId} has started at ${data.broadcastLabel ?? ''}`)
   }
 
   async startChartMonitor (data: InputStartChartMonitorInterface): Promise<void> {

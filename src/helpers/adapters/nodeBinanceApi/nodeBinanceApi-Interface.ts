@@ -201,14 +201,7 @@ export interface OutputOHLCInterface {
 }
 
 export interface NodeBinanceApiAdapterInterface {
-  exchangeInfo: (settings: SettingsInterface) => Promise<any>
-  exchangeBalance: (settings: SettingsInterface) => Promise<any>
-  buy: (data: InputNewOrderInterface) => Promise<any>
-  sell: (data: InputNewOrderInterface) => Promise<any>
-  cancel: (data: InputCancelInterface) => Promise<any>
   orderTrade: (data: InputOrderTradeInterface) => Promise<OutputOrdertradeInterface>
   orderStatus: (data: InputOrderStatusInterface) => Promise<OutputOrderStatusInterface>
-  miniTickerStream: (callback: _callback, settings: SettingsInterface) => Promise<void>
   chartStream: (data: InputChartStreamInterface) => Promise<void>
-  userDataStream: (callback: _callback, executionCallback: boolean, listStatusCallback: _callback, settings: SettingsInterface) => Promise<void>
 }

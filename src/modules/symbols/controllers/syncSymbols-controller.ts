@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { AesCrypto } from '../../../helpers/adapters/aesCrypto/aesCrypto-adapter'
-import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/functions/nodeBinanceApi-adapter'
+import { BinanceApiNodeAdapter } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-adapter'
 import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypted'
 
 import { UsersRepository } from '../../users/repositories/users-repository'
@@ -18,9 +18,9 @@ export class SyncSymbolsController {
 
     const symbolsRepository = new SymbolsRepository()
 
-    const nodeBinanceApiAdapter = new NodeBinanceApiAdapter()
+    const binanceApiNodeAdapter = new BinanceApiNodeAdapter()
 
-    const syncSymbolsUseCase = new SyncSymbolsUseCase(getSettingsDecrypted, symbolsRepository, nodeBinanceApiAdapter)
+    const syncSymbolsUseCase = new SyncSymbolsUseCase(getSettingsDecrypted, symbolsRepository, binanceApiNodeAdapter)
 
     await syncSymbolsUseCase.execute(id)
 

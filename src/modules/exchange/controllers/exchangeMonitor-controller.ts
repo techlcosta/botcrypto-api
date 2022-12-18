@@ -1,7 +1,9 @@
 import { AesCrypto } from '../../../helpers/adapters/aesCrypto/aesCrypto-adapter'
-import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/functions/nodeBinanceApi-adapter'
+import { BinanceApiNodeAdapter } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-adapter'
+import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-adapter'
 import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypted'
 import { OrdersRepository } from '../../orders/repositories/orders-repository'
+import { RobotRepository } from '../../robot/repositories/robot-repository'
 import { UsersRepository } from '../../users/repositories/users-repository'
 import { ExchangeActions } from '../actions/exchange-actions'
 import { ExchangeMonitorUseCase } from '../use-cases/exchangeMonitor-useCase'
@@ -22,13 +24,17 @@ export class ExchangeMonitorController {
 
     const monitorsRepository = new MonitorsRepository()
 
+    const binanceAdapter = new BinanceApiNodeAdapter()
+
+    const robotRepository = new RobotRepository()
+
     const nodeBinanceApiAdapter = new NodeBinanceApiAdapter()
 
     const webSocketServer = new WebSocketServer(usersRepository)
 
     const getSettingsDecrypted = new GetSettingsDecrypted(usersRepository, aesCrypto)
 
-    const exchangeActions = new ExchangeActions(nodeBinanceApiAdapter, ordersRepository)
+    const exchangeActions = new ExchangeActions(nodeBinanceApiAdapter, binanceAdapter, ordersRepository, robotRepository)
 
     const exchangeMonitorUseCase = new ExchangeMonitorUseCase(webSocketServer, monitorsRepository, getSettingsDecrypted, exchangeActions)
 

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { AesCrypto } from '../../../helpers/adapters/aesCrypto/aesCrypto-adapter'
-import { NodeBinanceApiAdapter } from '../../../helpers/adapters/nodeBinanceApi/functions/nodeBinanceApi-adapter'
+import { BinanceApiNodeAdapter } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-adapter'
 import { GetSettingsDecrypted } from '../../../helpers/utils/getSettingsDecrypted'
 import { UsersRepository } from '../../users/repositories/users-repository'
 import { OrdersRepository } from './../repositories/orders-repository'
@@ -8,7 +8,7 @@ import { NewOrderUseCase } from './../use-cases/newOrder-useCase'
 
 export class NewOrderController {
   async handle (request: Request, response: Response): Promise<Response> {
-    const { side, symbol, quantity, limitPrice, type, options, automationId, isMaker } = await request.body
+    const { side, symbol, quantity, limitPrice, type, stopPrice, icebergQuantity, automationId, isMaker } = await request.body
 
     const { id: userId } = request.user
 
@@ -18,11 +18,11 @@ export class NewOrderController {
 
     const getSettingsDecrypted = new GetSettingsDecrypted(usersRepository, aesCrypto)
 
-    const nodeBinanceApiAdapter = new NodeBinanceApiAdapter()
+    const binanceApiNodeAdapter = new BinanceApiNodeAdapter()
 
     const ordersRepository = new OrdersRepository()
 
-    const newOrderUseCase = new NewOrderUseCase(getSettingsDecrypted, nodeBinanceApiAdapter, ordersRepository)
+    const newOrderUseCase = new NewOrderUseCase(getSettingsDecrypted, binanceApiNodeAdapter, ordersRepository)
 
     await newOrderUseCase.execute({
       side,
@@ -30,7 +30,8 @@ export class NewOrderController {
       quantity,
       limitPrice,
       type,
-      options,
+      stopPrice,
+      icebergQuantity,
       automationId,
       isMaker,
       userId

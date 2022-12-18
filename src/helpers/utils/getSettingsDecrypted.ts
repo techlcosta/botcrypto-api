@@ -1,5 +1,5 @@
 import { AesCryptoAdapterInterface } from '../adapters/aesCrypto/aesCrypto-adapter'
-import { SettingsInterface } from '../adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
+import { SettingsInterface } from '../adapters/nodeBinanceApi/nodeBinanceApi-Interface'
 import { AppError } from '../errors/appError'
 import { UsersRepositoryInterface } from './../../modules/users/interfaces/users-interface'
 

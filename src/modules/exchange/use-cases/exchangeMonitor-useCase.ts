@@ -1,7 +1,8 @@
 
 import { WebSocketServerInterface } from '../../../app-ws'
+import { MonitorTypesEnum } from '../../../dtos/dtos'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
-import { MonitorsRepositoryInterface, MonitorTypes } from '../../monitors/interfaces/monitors-interface'
+import { MonitorsRepositoryInterface } from '../../monitors/interfaces/monitors-interface'
 import { ExchangeActionsInterface } from '../interfaces/exchange-interface'
 
 export class ExchangeMonitorUseCase {
@@ -15,21 +16,25 @@ export class ExchangeMonitorUseCase {
   async execute (): Promise<void> {
     const monitors = await this.monitorsRepository.getActiveMonitors()
 
+    await this.exchangeActions.startMiniTickerMonitor({
+      broadcastLabel: 'miniTickerStream',
+      showLogs: false,
+      broadcast: (data) => this.wss.broadcast(data)
+    })
+
+    await this.exchangeActions.startTickerAndBookMonitor({
+      broadcastLabel: 'TickerStream,bookStream',
+      showLogs: false,
+      broadcast: (data) => this.wss.broadcast(data)
+    })
+
     if (!monitors) return
 
     for (const monitor of monitors) {
       const settings = await this.getSettingsDecrypted.handle({ userId: monitor.userId })
       setTimeout(() => {
         switch (monitor.type) {
-          case MonitorTypes.MINI_TICKER:
-            return this.exchangeActions.startMiniTickerMonitor({
-              broadcastLabel: monitor.broadcastLabel ?? undefined,
-              showLogs: monitor.showLogs,
-              broadcast: (data) => this.wss.broadcast(data),
-              settings
-            })
-
-          case MonitorTypes.USER_DATA:
+          case MonitorTypesEnum.USER_DATA:
             return this.exchangeActions.startUserDataMonitor({
               broadcastLabel: monitor.broadcastLabel ?? '',
               showLogs: monitor.showLogs,
@@ -38,7 +43,7 @@ export class ExchangeMonitorUseCase {
               settings
             })
 
-          case MonitorTypes.CANDLES:
+          case MonitorTypesEnum.CANDLES:
             return this.exchangeActions.startChartMonitor({
               userId: monitor.userId,
               symbol: monitor.symbol,

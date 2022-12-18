@@ -1,39 +1,36 @@
-import { NodeBinanceApiAdapterInterface } from '../../../helpers/adapters/nodeBinanceApi/interfaces/nodeBinanceApi-Interface'
+import { SymbolLotSizeFilter, SymbolMinNotionalFilter } from 'binance-api-node'
+import { BinanceApiNodeAdapterInterface } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-interface'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 import { SymbolsRepositoryInterface } from '../interfaces/symbols-interface'
-
-import { InputUpdateSymbolsInterface } from './../interfaces/symbols-interface'
 
 export class SyncSymbolsUseCase {
   constructor (
     private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
     private readonly symbolsRepository: SymbolsRepositoryInterface,
-    private readonly nodeBinanceApiAdapter: NodeBinanceApiAdapterInterface
+    private readonly binanceApiNodeAdapter: BinanceApiNodeAdapterInterface
 
   ) { }
 
-  async execute (id: string): Promise<void> {
-    const settings = await this.getSettingsDecrypted.handle({ userId: id })
+  async execute (userId: string): Promise<void> {
+    const settings = await this.getSettingsDecrypted.handle({ userId })
 
-    const exchangeInfo = await this.nodeBinanceApiAdapter.exchangeInfo(settings)
+    const exchangeInfo = await this.binanceApiNodeAdapter.exchangeInfo(settings)
 
-    const symbols: InputUpdateSymbolsInterface[] = exchangeInfo.symbols.map((symbol: any): InputUpdateSymbolsInterface => {
-      const minNotionalFilter = symbol.filters.find((f: any) => f.filterType === 'MIN_NOTIONAL')
-      const minLotSizeFilter = symbol.filters.find((f: any) => f.filterType === 'LOT_SIZE')
-      return {
-        symbol: symbol.symbol,
-        base: symbol.baseAsset,
-        quote: symbol.quoteAsset,
-        basePrecision: symbol.baseAssetPrecision,
-        quotePrecision: symbol.quoteAssetPrecision,
-        minNotional: minNotionalFilter.minNotional || '1',
-        minLotSize: minLotSizeFilter.minQty || '1',
-        userId: id
-      }
-    })
+    for (const data of exchangeInfo.symbols) {
+      const { symbol, baseAsset, quoteAsset, baseAssetPrecision, quoteAssetPrecision, filters } = data
+      const minNotionalFilter = filters.find(f => f.filterType === 'MIN_NOTIONAL') as SymbolMinNotionalFilter | undefined
+      const minLotSizeFilter = filters.find((f) => f.filterType === 'LOT_SIZE') as SymbolLotSizeFilter | undefined
 
-    for (const symbol of symbols) {
-      await this.symbolsRepository.update(symbol)
+      await this.symbolsRepository.update({
+        symbol,
+        base: baseAsset,
+        quote: quoteAsset,
+        basePrecision: baseAssetPrecision,
+        quotePrecision: quoteAssetPrecision,
+        minNotional: minNotionalFilter?.minNotional ?? '1',
+        minLotSize: minLotSizeFilter?.minQty ?? '1',
+        userId
+      })
     }
   }
 }
