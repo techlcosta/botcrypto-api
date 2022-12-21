@@ -1,5 +1,5 @@
 import { IndexesTypesType } from '../../../dtos/dtos'
-import { InputUpdateRobotMemoryInterface, RobotRepositoryInterface } from '../interfaces/robot-interface'
+import { ConvertedInterface, InputUpdateRobotMemoryInterface, RobotRepositoryInterface } from '../interfaces/robot-interface'
 import { redis } from './../../../redis'
 
 interface MemoryKeyFactory {
@@ -12,8 +12,8 @@ interface MemoryKeyFactory {
 export class RobotRepository implements RobotRepositoryInterface {
   private async memoryKeyFactory ({ userId, symbol, index, interval }: MemoryKeyFactory): Promise<string> {
     if (!userId && interval) return `${symbol}:${index}_${interval}`
-    if (userId && !interval) return `${userId}-${symbol}:${index}`
-    if (userId && interval) return `${userId}-${symbol}:${index}_${interval}`
+    if (userId && !interval) return `${symbol}:${index}@${userId}`
+    if (userId && interval) return `${symbol}:${index}_${interval}@${userId}`
 
     return `${symbol}:${index}`
   }
@@ -26,12 +26,34 @@ export class RobotRepository implements RobotRepositoryInterface {
     await redis.set(key, JSON.stringify(value))
   }
 
-  async getRobotMemory (): Promise<any> {
+  async getAllRobotMemory (): Promise<ConvertedInterface> {
     const keys = await redis.keys('*')
 
-    const values = await redis.mget(...keys)
+    let converted = {} as ConvertedInterface
 
-    const converted = values.map(value => value ? JSON.parse(value) : value)
+    for (const key of keys) {
+      const value = await redis.get(key)
+
+      if (value) {
+        converted = { ...converted, [key]: JSON.parse(value) }
+      }
+    }
+
+    return converted
+  }
+
+  async searchPatternOnRobotMemory (pattern: string): Promise<ConvertedInterface> {
+    const keys = await redis.keys(pattern)
+
+    let converted = {} as ConvertedInterface
+
+    for (const key of keys) {
+      const value = await redis.get(key)
+
+      if (value) {
+        converted = { ...converted, [key]: JSON.parse(value) }
+      }
+    }
 
     return converted
   }

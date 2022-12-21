@@ -4,11 +4,23 @@ import { BinanceApiNodeAdapterInterface, InputCancelInterface, InputChartStreamI
 export class BinanceApiNodeAdapter implements BinanceApiNodeAdapterInterface {
   private async newClient (settings?: SettingsInterface): Promise<Binance> {
     if (settings) {
+      const { APIKEY, APISECRET, urls } = settings
+
+      if (urls.base.endsWith('/api/') || urls.base.endsWith('/api')) {
+        const [url] = urls.base.split('/api')
+        urls.base = url
+      }
+
+      if (urls.stream.endsWith('/api/') || urls.stream.endsWith('/api')) {
+        const [url] = urls.stream.split('/api')
+        urls.stream = url
+      }
+
       return BinanceApi({
-        apiKey: settings?.APIKEY,
-        apiSecret: settings?.APISECRET,
-        httpBase: 'https://testnet.binance.vision',
-        wsBase: 'wss://testnet.binance.vision/ws'
+        apiKey: APIKEY,
+        apiSecret: APISECRET,
+        httpBase: urls.base,
+        wsBase: urls.stream
       })
     }
 

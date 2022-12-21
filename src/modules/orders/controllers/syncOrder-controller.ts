@@ -13,8 +13,6 @@ export class SyncOrderController {
 
     const { id: userId } = request.user
 
-    console.log(id)
-
     const usersRepository = new UsersRepository()
 
     const aesCrypto = new AesCrypto()

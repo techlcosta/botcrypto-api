@@ -12,8 +12,13 @@ export interface InputgetRobotMemoryInterface {
   symbol: string
 }
 
+export interface ConvertedInterface {
+  [key: string]: object
+}
+
 export interface RobotRepositoryInterface {
   updateRobotMemory: (data: InputUpdateRobotMemoryInterface) => Promise<void>
-  getRobotMemory: () => Promise<any>
+  getAllRobotMemory: () => Promise<ConvertedInterface>
+  searchPatternOnRobotMemory: (pattern: string) => Promise<ConvertedInterface>
 
 }

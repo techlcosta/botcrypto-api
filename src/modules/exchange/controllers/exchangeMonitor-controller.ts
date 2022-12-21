@@ -8,6 +8,7 @@ import { UsersRepository } from '../../users/repositories/users-repository'
 import { ExchangeActions } from '../actions/exchange-actions'
 import { ExchangeMonitorUseCase } from '../use-cases/exchangeMonitor-useCase'
 import { WebSocketServer } from './../../../app-ws'
+import { TechnicalIndicatorsAdapter } from './../../../helpers/adapters/technicalIndicators/technicalIndicators-adapter'
 import { MonitorsRepository } from './../../monitors/repositories/monitors-repository'
 
 interface ExchangeMonitorControllerRequestInterface {
@@ -24,17 +25,19 @@ export class ExchangeMonitorController {
 
     const monitorsRepository = new MonitorsRepository()
 
-    const binanceAdapter = new BinanceApiNodeAdapter()
+    const binanceApiNodeAdapter = new BinanceApiNodeAdapter()
 
     const robotRepository = new RobotRepository()
 
     const nodeBinanceApiAdapter = new NodeBinanceApiAdapter()
 
+    const technicalIndicatorsAdapter = new TechnicalIndicatorsAdapter()
+
     const webSocketServer = new WebSocketServer(usersRepository)
 
     const getSettingsDecrypted = new GetSettingsDecrypted(usersRepository, aesCrypto)
 
-    const exchangeActions = new ExchangeActions(nodeBinanceApiAdapter, binanceAdapter, ordersRepository, robotRepository)
+    const exchangeActions = new ExchangeActions(nodeBinanceApiAdapter, binanceApiNodeAdapter, ordersRepository, robotRepository, technicalIndicatorsAdapter)
 
     const exchangeMonitorUseCase = new ExchangeMonitorUseCase(webSocketServer, monitorsRepository, getSettingsDecrypted, exchangeActions)
 

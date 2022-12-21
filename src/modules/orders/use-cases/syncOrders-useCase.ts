@@ -47,7 +47,6 @@ export class SyncOrderUseCase {
       throw new AppError(error.body)
     }
 
-    console.log(orderStatus, orderTrade)
     const quoteQuantity = parseFloat(orderStatus.cummulativeQuoteQty)
     const avgPrice = (quoteQuantity / parseFloat(orderStatus.executedQty)).toString()
     const net = orderTrade.commissionAsset && order.symbol.endsWith(orderTrade.commissionAsset)

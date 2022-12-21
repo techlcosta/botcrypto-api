@@ -1,5 +1,5 @@
 import Binance from 'node-binance-api'
-import { InputCancelInterface, InputChartStreamInterface, InputNewOrderInterface, InputOrderStatusInterface, InputOrderTradeInterface, NodeBinanceApiAdapterInterface, OutputOHLCInterface, OutputOrderStatusInterface, OutputOrdertradeInterface, SettingsInterface, _asyncCallback, _callback } from './nodeBinanceApi-Interface'
+import { InputChartStreamInterface, InputOrderStatusInterface, InputOrderTradeInterface, NodeBinanceApiAdapterInterface, OutputOHLCInterface, OutputOrderStatusInterface, OutputOrdertradeInterface, SettingsInterface } from './nodeBinanceApi-Interface'
 
 export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
   instances: Binance[] = []
@@ -18,69 +18,13 @@ export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
 
     if (!binance) {
       binance = new Binance()
+      if (settings?.urls.base.includes('testnet.binance')) settings.urls = { base: 'https://testnet.binance.vision/api/', stream: settings.urls.stream }
+      if (settings?.urls.stream.includes('testnet.binance')) settings.urls = { base: settings.urls.base, stream: 'wss://testnet.binance.vision/ws/' }
       await binance.options(settings)
       this.instances.push(binance)
     }
 
     return binance
-  }
-
-  async exchangeInfo (settings: SettingsInterface): Promise<any> {
-    const binance = await this.setSettings(settings)
-
-    const exchangeInfo = await binance.exchangeInfo()
-
-    return exchangeInfo
-  }
-
-  async exchangeBalance (settings: SettingsInterface): Promise<any> {
-    const binance = await this.setSettings(settings)
-
-    const balance = await binance.balance()
-
-    return balance
-  }
-
-  async buy (data: InputNewOrderInterface): Promise<any> {
-    const { symbol, quantity, price, options, type, settings } = data
-
-    const binance = await this.setSettings(settings)
-
-    if (price && type !== 'MARKET') {
-      const response = await binance.buy(symbol, quantity, price, options)
-
-      return response
-    } else {
-      const response = await binance.marketBuy(symbol, quantity)
-
-      return response
-    }
-  }
-
-  async sell (data: InputNewOrderInterface): Promise<any> {
-    const { symbol, quantity, price, options, type, settings } = data
-
-    const binance = await this.setSettings(settings)
-
-    if (price && type !== 'MARKET') {
-      const response = await binance.sell(symbol, quantity, price, options)
-
-      return response
-    } else {
-      const response = await binance.marketSell(symbol, quantity)
-
-      return response
-    }
-  }
-
-  async cancel (data: InputCancelInterface): Promise<any> {
-    const { symbol, orderId, settings } = data
-
-    const binance = await this.setSettings(settings)
-
-    const response = await binance.cancel(symbol, orderId)
-
-    return response
   }
 
   async orderTrade (data: InputOrderTradeInterface): Promise<OutputOrdertradeInterface> {
@@ -107,18 +51,6 @@ export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
     return response
   }
 
-  async miniTickerStream (callback: _callback): Promise<void> {
-    const binance = await this.setSettings()
-
-    binance.websockets.miniTicker((market: any) => callback(market))
-  }
-
-  async tickerStream (callback: _asyncCallback): Promise<void> {
-    const binance = await this.setSettings()
-
-    binance.websockets.prevDay(null, async (data: any, converted: any) => await callback(converted), true)
-  }
-
   async chartStream (data: InputChartStreamInterface): Promise<void> {
     const { symbol, interval, callback, limit, settings } = data
 
@@ -127,16 +59,5 @@ export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
     await binance.websockets.chart(symbol, interval, async (symbol: any, interval: any, chart: any) => {
       await callback(await binance.ohlc(chart) as OutputOHLCInterface)
     }, limit)
-  }
-
-  async userDataStream (callback: _callback, executionCallback: boolean, listStatusCallback: _callback, settings: SettingsInterface): Promise<void> {
-    const binance = await this.setSettings(settings)
-
-    binance.websockets.userData(
-      async (userData: any) => callback(userData),
-      executionCallback,
-      (subscribe: any) => console.log(`User data stream: subscrebed: ${subscribe as string}`),
-      (listStatus: any) => listStatusCallback(listStatus)
-    )
   }
 }

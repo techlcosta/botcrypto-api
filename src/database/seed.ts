@@ -1,12 +1,13 @@
 import { hash } from 'bcrypt'
+import { MonitorTypesEnum } from '../dtos/dtos'
 import { AesCrypto } from '../helpers/adapters/aesCrypto/aesCrypto-adapter'
-import { MonitorTypes } from '../modules/monitors/interfaces/monitors-interface'
+
 import { prisma } from '../prisma'
 
 async function main (): Promise<void> {
   let user = await prisma.user.findFirst({
     where: {
-      username: process.env.USER as string
+      username: process.env.SYSTEM_USER as string
     }
   })
 
@@ -14,7 +15,7 @@ async function main (): Promise<void> {
     const { encrypt } = new AesCrypto()
     user = await prisma.user.create({
       data: {
-        username: process.env.USER as string,
+        username: process.env.SYSTEM_USER as string,
         password: await hash(process.env.PASSWORD as string, 10),
         apiURL: process.env.API_URL as string,
         streamURL: process.env.STREAM_URL as string,
@@ -51,23 +52,15 @@ async function main (): Promise<void> {
         {
           symbol: '*',
           userId: user.id,
-          type: MonitorTypes.MINI_TICKER,
+          type: MonitorTypesEnum.USER_DATA,
           isActive: true,
           isSystemMonitor: true,
-          broadcastLabel: 'miniTickerStream'
-        },
-        {
-          symbol: '*',
-          userId: user.id,
-          type: MonitorTypes.USER_DATA,
-          isActive: true,
-          isSystemMonitor: true,
-          broadcastLabel: 'balanceStream,executionStream'
+          broadcastLabel: ''
         },
         {
           symbol: 'BTCBUSD',
           userId: user.id,
-          type: MonitorTypes.CANDLES,
+          type: MonitorTypesEnum.CANDLES,
           isActive: true,
           isSystemMonitor: false,
           indexes: 'RSI,MACD',

@@ -17,7 +17,7 @@ export class GetBalaceUseCase {
 
     const balance = await this.binanceApiNodeAdapter.exchangeBalance(settings).catch(err => { throw new AppError(err.message || err.body) })
 
-    const balanceWallet = balance.balances.map((value) => {
+    const balancesWallet = balance.balances.map((value) => {
       return {
         symbol: value.asset,
         available: value.free,
@@ -25,6 +25,6 @@ export class GetBalaceUseCase {
       }
     })
 
-    return balanceWallet
+    return balancesWallet
   }
 }
