@@ -1,16 +1,9 @@
 import { AppError } from '../../../helpers/errors/appError'
 import { prisma } from '../../../prisma'
-import { InputCountMonitorsInterface, InputCreateMonitorInterface, InputDeleteMonitorInterface, InputFindMonitorByIdInterface, InputFindMonitorByUserIdInterface, InputGetMonitorsInterface, InputUpdateMonitorInterface, MonitorInterface, MonitorsRepositoryInterface } from './../interfaces/monitors-interface'
-
-interface MonitorAlredyExistsInterface {
-  userId: string
-  type: string
-  symbol: string
-  interval?: string
-}
+import { InputCountMonitorsInterface, InputCreateMonitorInterface, InputDeleteMonitorInterface, InputFindMonitorByIdInterface, InputFindMonitorByUserIdInterface, InputGetMonitorsInterface, InputUpdateMonitorInterface, MonitorAlredyExistsInterface, MonitorInterface, MonitorsRepositoryInterface } from '../interfaces/monitorsRepository-interface'
 
 export class MonitorsRepository implements MonitorsRepositoryInterface {
-  private async monitorAlredyExists (data: MonitorAlredyExistsInterface): Promise<MonitorInterface | null> {
+  async monitorAlredyExists (data: MonitorAlredyExistsInterface): Promise<MonitorInterface | null> {
     const monitor = await prisma.monitor.findFirst({
       where: {
         userId: data.userId,
@@ -56,9 +49,9 @@ export class MonitorsRepository implements MonitorsRepositoryInterface {
   async delete (data: InputDeleteMonitorInterface): Promise<void> {
     const monitor = await this.findById({ id: data.id, userId: data.userId })
 
-    if (monitor?.isSystemMonitor === true) throw new AppError('This monitor is system monitor!')
-
     if (!monitor) throw new AppError('Monitor not found!')
+
+    if (monitor.isSystemMonitor) throw new AppError('This monitor is system monitor!')
 
     await prisma.monitor.delete({
       where: {
@@ -126,8 +119,8 @@ export class MonitorsRepository implements MonitorsRepositoryInterface {
       take,
       skip: take * ((page) - 1),
       orderBy: [
-        { isActive: 'desc' },
         { isSystemMonitor: 'desc' },
+        { isActive: 'desc' },
         { symbol: 'desc' }
       ]
     })

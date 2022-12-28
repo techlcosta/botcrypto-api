@@ -1,4 +1,4 @@
-import { SettingsInterface } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
+import { SettingsInterface } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-interface'
 
 export interface InputStartMiniTickerMonitorInterface {
   showLogs: boolean
@@ -31,9 +31,19 @@ export interface InputStartChartMonitorInterface {
   direct: (userId: string, data: Object) => void
 }
 
-export interface ExchangeActionsInterface {
+export interface StopChartMonitorInterface {
+  userId: string
+  settings: SettingsInterface
+  symbol: string
+  interval: string
+  indexes: string
+}
+
+export interface MonitorsActionsInterface {
   startTickerAndBookMonitor: (data: InputStartTickerMonitorInterface) => Promise<void>
   startMiniTickerMonitor: (data: InputStartMiniTickerMonitorInterface) => Promise<void>
   startUserDataMonitor: (data: InputStartUserDataMonitorInterface) => Promise<void>
   startChartMonitor: (data: InputStartChartMonitorInterface) => Promise<void>
+  stopChartMonitor: (data: StopChartMonitorInterface) => Promise<void>
+  clearCache: () => Promise<void>
 }

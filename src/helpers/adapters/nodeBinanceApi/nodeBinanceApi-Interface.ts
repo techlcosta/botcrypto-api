@@ -1,3 +1,4 @@
+import { SettingsInterface } from '../../../dtos/dtos'
 
 export type SideOrderTypes = 'BUY' | 'SELL'
 
@@ -10,15 +11,6 @@ export type StatusOrderTypes = 'NEW' | 'FILLED' | 'CANCELED' | 'REJECTED'
 export type _callback = (...args: any) => any
 
 export type _asyncCallback = (...args: any) => Promise<any>
-
-export interface SettingsInterface {
-  APIKEY: string
-  APISECRET: string
-  urls: {
-    base: string
-    stream: string
-  }
-}
 
 export interface OutputBalanceInterface {
   [key: string]: {
@@ -188,7 +180,7 @@ export interface InputChartStreamInterface {
   settings: SettingsInterface
   symbol: string
   interval: string
-  callback: _asyncCallback
+  callback: _callback
   limit?: number
 }
 
@@ -200,8 +192,15 @@ export interface OutputOHLCInterface {
   volume: number[]
 }
 
+export interface InputCloseChartStream {
+  settings: SettingsInterface
+  symbol: string
+  interval: string
+}
+
 export interface NodeBinanceApiAdapterInterface {
   orderTrade: (data: InputOrderTradeInterface) => Promise<OutputOrdertradeInterface>
   orderStatus: (data: InputOrderStatusInterface) => Promise<OutputOrderStatusInterface>
   chartStream: (data: InputChartStreamInterface) => Promise<void>
+  closeChartStream: (data: InputCloseChartStream) => Promise<void>
 }

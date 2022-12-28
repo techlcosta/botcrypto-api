@@ -3,6 +3,7 @@ import { BinanceApiNodeAdapterInterface, OutputNewOrder } from '../../../helpers
 import { SideOrderTypes, TypeOrderTypes } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 import { OrdersRepositoryInterface } from '../interfaces/orders-interface'
+import { AppError } from './../../../helpers/errors/appError'
 
 interface RequestNewOrderInterface {
   side: SideOrderTypes
@@ -35,10 +36,12 @@ export class NewOrderUseCase {
       case 'LIMIT':
         if (price) response = await this.binanceApiNodeAdapter.newOrder(settings, { type: OrderType.LIMIT, price, quantity, side, symbol })
         break
+      case 'MARKET':
+        response = await this.binanceApiNodeAdapter.newOrder(settings, { type: OrderType.MARKET, quantity, symbol, side })
+        break
 
       default:
-        response = await this.binanceApiNodeAdapter.newOrder(settings, { type: OrderType.MARKET, quantity, symbol, side }).catch()
-        break
+        throw new AppError('Order type not found!')
     }
 
     if (response) {

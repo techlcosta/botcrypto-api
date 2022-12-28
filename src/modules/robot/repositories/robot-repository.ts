@@ -1,6 +1,7 @@
 import { IndexesTypesType } from '../../../dtos/dtos'
-import { ConvertedInterface, InputUpdateRobotMemoryInterface, RobotRepositoryInterface } from '../interfaces/robot-interface'
+import { ConvertedInterface, InputDeleteKeyOnRobotMemoryInterface, InputUpdateRobotMemoryInterface, RobotRepositoryInterface } from '../interfaces/robot-interface'
 import { redis } from './../../../redis'
+import { InputGetKeyOnRobotMemoryInterface } from './../interfaces/robot-interface'
 
 interface MemoryKeyFactory {
   userId?: string
@@ -42,6 +43,16 @@ export class RobotRepository implements RobotRepositoryInterface {
     return converted
   }
 
+  async getKeyOnRobotMemory (data: InputGetKeyOnRobotMemoryInterface): Promise<object> {
+    const key = await this.memoryKeyFactory({ ...data })
+
+    const reponse = await redis.get(key)
+
+    if (!reponse) throw new Error('This key not found!')
+
+    return JSON.parse(reponse)
+  }
+
   async searchPatternOnRobotMemory (pattern: string): Promise<ConvertedInterface> {
     const keys = await redis.keys(pattern)
 
@@ -56,5 +67,15 @@ export class RobotRepository implements RobotRepositoryInterface {
     }
 
     return converted
+  }
+
+  async deleteKeyOnRobotMemory (data: InputDeleteKeyOnRobotMemoryInterface): Promise<void> {
+    const key = await this.memoryKeyFactory({ ...data })
+
+    await redis.del(key)
+  }
+
+  async clearAllOnRobotMemory (): Promise<void> {
+    await redis.flushdb()
   }
 }

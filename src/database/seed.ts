@@ -52,7 +52,7 @@ async function main (): Promise<void> {
         {
           symbol: '*',
           userId: user.id,
-          type: MonitorTypesEnum.USER_DATA,
+          type: MonitorTypesEnum.WALLET,
           isActive: true,
           isSystemMonitor: true,
           broadcastLabel: ''
@@ -64,7 +64,7 @@ async function main (): Promise<void> {
           isActive: true,
           isSystemMonitor: false,
           indexes: 'RSI,MACD',
-          interval: '1m'
+          interval: '15m'
         }
 
       ]

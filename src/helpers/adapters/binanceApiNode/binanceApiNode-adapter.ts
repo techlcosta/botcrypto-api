@@ -1,26 +1,27 @@
 import BinanceApi, { Account, Binance, CancelOrderResult, ExchangeInfo, MiniTicker, MyTrade, NewOrderSpot, OrderType_LT, QueryOrderResult, Ticker } from 'binance-api-node'
-import { BinanceApiNodeAdapterInterface, InputCancelInterface, InputChartStreamInterface, InputOrderStatusInterface, InputOrderTradeInterface, InputUserDataStreamInterface, OutputNewOrder, SettingsInterface } from './binanceApiNode-interface'
+import { SettingsInterface } from '../../../dtos/dtos'
+import { BinanceApiNodeAdapterInterface, InputCancelInterface, InputChartStreamInterface, InputOrderStatusInterface, InputOrderTradeInterface, InputUserDataStreamInterface, OutputNewOrder } from './binanceApiNode-interface'
 
 export class BinanceApiNodeAdapter implements BinanceApiNodeAdapterInterface {
   private async newClient (settings?: SettingsInterface): Promise<Binance> {
     if (settings) {
       const { APIKEY, APISECRET, urls } = settings
 
-      if (urls.base.endsWith('/api/') || urls.base.endsWith('/api')) {
+      if (urls?.base.endsWith('/api/') ?? urls?.base.endsWith('/api')) {
         const [url] = urls.base.split('/api')
         urls.base = url
       }
 
-      if (urls.stream.endsWith('/api/') || urls.stream.endsWith('/api')) {
-        const [url] = urls.stream.split('/api')
+      if (urls?.stream.endsWith('/')) {
+        const url = urls.stream.slice(0, -1)
         urls.stream = url
       }
 
       return BinanceApi({
         apiKey: APIKEY,
         apiSecret: APISECRET,
-        httpBase: urls.base,
-        wsBase: urls.stream
+        httpBase: urls?.base,
+        wsBase: urls?.stream
       })
     }
 

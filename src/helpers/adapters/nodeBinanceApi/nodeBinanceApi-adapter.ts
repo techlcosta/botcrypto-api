@@ -1,28 +1,32 @@
 import Binance from 'node-binance-api'
-import { InputChartStreamInterface, InputOrderStatusInterface, InputOrderTradeInterface, NodeBinanceApiAdapterInterface, OutputOHLCInterface, OutputOrderStatusInterface, OutputOrdertradeInterface, SettingsInterface } from './nodeBinanceApi-Interface'
+import { SettingsInterface } from '../../../dtos/dtos'
+import { InputChartStreamInterface, InputCloseChartStream, InputOrderStatusInterface, InputOrderTradeInterface, NodeBinanceApiAdapterInterface, OutputOHLCInterface, OutputOrderStatusInterface, OutputOrdertradeInterface } from './nodeBinanceApi-Interface'
 
 export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
-  instances: Binance[] = []
+  private static readonly publicBinance: Binance = new Binance()
 
-  private async setSettings (settings?: SettingsInterface): Promise<Binance> {
-    let binance: Binance | null = null
+  private static readonly privateInstances: Binance[] = []
 
-    for (const instance of this.instances) {
+  private async privateCall (settings: SettingsInterface): Promise<Binance> {
+    if (!settings) throw new Error('Settings is required!')
+
+    for (const instance of NodeBinanceApiAdapter.privateInstances) {
       const options = await instance.getOptions()
 
-      if (settings && options.APIKEY === settings.APIKEY && options.APISECRET === settings.APISECRET) {
-        binance = instance
-        break
+      if (settings.APIKEY === options.APIKEY && settings.APISECRET && options.APISECRET) {
+        return instance
       }
     }
 
-    if (!binance) {
-      binance = new Binance()
-      if (settings?.urls.base.includes('testnet.binance')) settings.urls = { base: 'https://testnet.binance.vision/api/', stream: settings.urls.stream }
-      if (settings?.urls.stream.includes('testnet.binance')) settings.urls = { base: settings.urls.base, stream: 'wss://testnet.binance.vision/ws/' }
-      await binance.options(settings)
-      this.instances.push(binance)
-    }
+    const binance = new Binance().options(settings)
+
+    NodeBinanceApiAdapter.privateInstances.push(binance)
+
+    return binance
+  }
+
+  private async publicCall (): Promise<Binance> {
+    const binance = await NodeBinanceApiAdapter.publicBinance.options({ reconnect: false })
 
     return binance
   }
@@ -30,7 +34,7 @@ export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
   async orderTrade (data: InputOrderTradeInterface): Promise<OutputOrdertradeInterface> {
     const { symbol, orderId, settings } = data
 
-    const binance = await this.setSettings(settings)
+    const binance = await this.privateCall(settings)
 
     const response: OutputOrdertradeInterface[] = await binance.trades(symbol)
 
@@ -44,7 +48,7 @@ export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
   async orderStatus (data: InputOrderStatusInterface): Promise<OutputOrderStatusInterface> {
     const { symbol, orderId, settings } = data
 
-    const binance = await this.setSettings(settings)
+    const binance = await this.privateCall(settings)
 
     const response = await binance.orderStatus(symbol, undefined, undefined, { orderId: String(orderId) })
 
@@ -54,10 +58,15 @@ export class NodeBinanceApiAdapter implements NodeBinanceApiAdapterInterface {
   async chartStream (data: InputChartStreamInterface): Promise<void> {
     const { symbol, interval, callback, limit, settings } = data
 
-    const binance = await this.setSettings(settings)
+    const binance = await this.privateCall(settings)
 
     await binance.websockets.chart(symbol, interval, async (symbol: any, interval: any, chart: any) => {
       await callback(await binance.ohlc(chart) as OutputOHLCInterface)
     }, limit)
+  }
+
+  async closeChartStream ({ symbol, interval, settings }: InputCloseChartStream): Promise<void> {
+    const binance = await this.privateCall(settings)
+    await binance.websockets.terminate(`${symbol.toLowerCase()}@kline_${interval}`)
   }
 }

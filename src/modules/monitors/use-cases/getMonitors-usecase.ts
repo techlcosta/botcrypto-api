@@ -1,5 +1,4 @@
-import { MonitorInterface } from '../interfaces/monitors-interface'
-import { MonitorsRepository } from '../repositories/monitors-repository'
+import { MonitorInterface, MonitorsRepositoryInterface } from '../interfaces/monitorsRepository-interface'
 
 interface RequestGetMonitorsInterface {
   page: number
@@ -12,7 +11,7 @@ interface ResponseGetMonitorsInterface {
 }
 export class GetMonitorsUseCase {
   constructor (
-    private readonly monitorsRepository: MonitorsRepository
+    private readonly monitorsRepository: MonitorsRepositoryInterface
   ) { }
 
   async execute ({ userId, symbol, page }: RequestGetMonitorsInterface): Promise<ResponseGetMonitorsInterface> {

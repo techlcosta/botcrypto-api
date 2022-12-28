@@ -2,26 +2,46 @@ export enum MonitorTypesEnum {
   MINI_TICKER = 'MINI_TICKER',
   TICKER = 'TICKER',
   BOOK = 'BOOK',
-  USER_DATA = 'USER_DATA',
   CANDLES = 'CANDLES',
   WALLET = 'WALLET',
   LAST_ORDER = 'LAST_ORDER',
   LAST_CANDLE = 'LAST_CANDLE',
   RSI = 'RSI',
-  MACD = 'MACD'
+  MACD = 'MACD',
+  STOCH_RSI = 'SRSI',
+  SMA = 'SMA',
+  EMA = 'EMA',
+  BOLLINGER_BANDS = 'BB'
 }
 
 export const IndexesTypesEnum = MonitorTypesEnum
 
-export type MonitorTypesType = 'MINI_TICKER'
+export type MonitorTypesType =
+| 'MINI_TICKER'
 | 'TICKER'
 | 'BOOK'
-| 'USER_DATA'
 | 'CANDLES'
+| 'WALLET'
+
+export type IndexesTypesType =
+| 'MINI_TICKER'
+| 'TICKER'
+| 'BOOK'
 | 'WALLET'
 | 'LAST_ORDER'
 | 'LAST_CANDLE'
 | 'RSI'
 | 'MACD'
+| 'SRSI'
+| 'SMA'
+| 'EMA'
+| 'BB'
 
-export type IndexesTypesType = MonitorTypesType
+export interface SettingsInterface {
+  APIKEY: string
+  APISECRET: string
+  urls: {
+    base: string
+    stream: string
+  }
+}

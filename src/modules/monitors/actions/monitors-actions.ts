@@ -1,11 +1,12 @@
 import { UserDataStreamEvent } from 'binance-api-node'
+import { IndexesTypesEnum, IndexesTypesType, SettingsInterface } from '../../../dtos/dtos'
 import { BinanceApiNodeAdapterInterface } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-interface'
-import { NodeBinanceApiAdapterInterface, OutputOHLCInterface, SettingsInterface } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
+import { NodeBinanceApiAdapterInterface, OutputOHLCInterface } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
+import { TechnicalIndicatorsAdapterInterface } from '../../../helpers/adapters/technicalIndicators/technicalIndicators-interface'
+
 import { InputUpdateOrdersInterface, OrdersRepositoryInterface } from '../../orders/interfaces/orders-interface'
 import { RobotRepositoryInterface } from '../../robot/interfaces/robot-interface'
-import { IndexesTypesEnum } from './../../../dtos/dtos'
-import { TechnicalIndicatorsAdapterInterface } from './../../../helpers/adapters/technicalIndicators/technicalIndicators-interface'
-import { ExchangeActionsInterface, InputStartChartMonitorInterface, InputStartMiniTickerMonitorInterface, InputStartTickerMonitorInterface, InputStartUserDataMonitorInterface } from './../interfaces/exchange-interface'
+import { InputStartChartMonitorInterface, InputStartMiniTickerMonitorInterface, InputStartTickerMonitorInterface, InputStartUserDataMonitorInterface, MonitorsActionsInterface, StopChartMonitorInterface } from '../interfaces/monitorsActions-interface'
 
 interface InputProcessChartInterface {
   symbol: string
@@ -24,7 +25,7 @@ interface OutputWalletInterface {
 
 type InputOnExecutionType = InputStartUserDataMonitorInterface
 
-export class ExchangeActions implements ExchangeActionsInterface {
+export class MonitorsActions implements MonitorsActionsInterface {
   constructor (
     private readonly nodeBinanceApiAdapter: NodeBinanceApiAdapterInterface,
     private readonly binanceApiNodeAdapter: BinanceApiNodeAdapterInterface,
@@ -79,14 +80,14 @@ export class ExchangeActions implements ExchangeActionsInterface {
       }
     }
 
-    const lastCandle = {
+    const LAST_CANDLE = {
       open: ohlc.open[ohlc.open.length - 1],
       close: ohlc.close[ohlc.close.length - 1],
       high: ohlc.high[ohlc.high.length - 1],
       low: ohlc.low[ohlc.low.length - 1]
     }
 
-    await this.robotRepository.updateRobotMemory({ symbol: data.symbol, userId: data.userId, interval: data.interval, index: 'LAST_CANDLE', value: lastCandle })
+    await this.robotRepository.updateRobotMemory({ symbol, userId, interval, index: 'LAST_CANDLE', value: LAST_CANDLE })
   }
 
   private async onExecution (execution: UserDataStreamEvent, data: InputOnExecutionType): Promise<void> {
@@ -149,6 +150,12 @@ export class ExchangeActions implements ExchangeActionsInterface {
 
   // Actions function *********************************************************************
 
+  async clearCache (): Promise<void> {
+    await this.robotRepository.clearAllOnRobotMemory()
+
+    console.log('Cache has empty!')
+  }
+
   async startMiniTickerMonitor (data: InputStartMiniTickerMonitorInterface): Promise<void> {
     const { showLogs, broadcastLabel, broadcast } = data
 
@@ -202,6 +209,7 @@ export class ExchangeActions implements ExchangeActionsInterface {
     await this.binanceApiNodeAdapter.userDataStream({
       settings: data.settings,
       callback: async (execution) => await this.onExecution(execution, data)
+
     })
 
     console.log(`User Data monitor by userId:${data.userId} has started at ${data.broadcastLabel ?? ''}`)
@@ -226,5 +234,19 @@ export class ExchangeActions implements ExchangeActionsInterface {
     })
 
     console.log(`Chart monitor by userId:${userId} has started at ${symbol}_${interval} `)
+  }
+
+  async stopChartMonitor ({ settings, userId, symbol, interval, indexes }: StopChartMonitorInterface): Promise<void> {
+    await this.nodeBinanceApiAdapter.closeChartStream({ settings, symbol, interval }).catch(err => console.log(err))
+
+    const arrayIndexes = indexes.split(',') as IndexesTypesType[]
+
+    arrayIndexes.push('LAST_CANDLE')
+
+    for (const index of arrayIndexes) {
+      await this.robotRepository.deleteKeyOnRobotMemory({ userId, symbol, interval, index })
+    }
+
+    console.log(`Chart monitor by userId:${userId} has stoped at ${symbol}_${interval} `)
   }
 }

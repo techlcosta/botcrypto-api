@@ -18,8 +18,6 @@ export interface InputCreateMonitorInterface {
   symbol: string
   type: string
   isActive: boolean
-  isSystemMonitor: boolean
-  showLogs: boolean
   broadcastLabel?: string
   interval?: string
   indexes?: string
@@ -66,6 +64,13 @@ export interface InputGetMonitorsInterface {
   page: number
 }
 
+export interface MonitorAlredyExistsInterface {
+  userId: string
+  type: string
+  symbol: string
+  interval?: string
+}
+
 export interface MonitorsRepositoryInterface {
   create: (data: InputCreateMonitorInterface) => Promise<MonitorInterface>
   update: (data: InputUpdateMonitorInterface) => Promise<MonitorInterface>
@@ -75,4 +80,5 @@ export interface MonitorsRepositoryInterface {
   getActiveMonitors: () => Promise<MonitorInterface[] | null>
   count: (data: InputCountMonitorsInterface) => Promise<number>
   get: (data: InputGetMonitorsInterface) => Promise<MonitorInterface[]>
+  monitorAlredyExists: (data: MonitorAlredyExistsInterface) => Promise<MonitorInterface | null>
 }

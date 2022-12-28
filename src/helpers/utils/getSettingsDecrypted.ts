@@ -1,5 +1,6 @@
+import { SettingsInterface } from '../../dtos/dtos'
 import { AesCryptoAdapterInterface } from '../adapters/aesCrypto/aesCrypto-adapter'
-import { SettingsInterface } from '../adapters/nodeBinanceApi/nodeBinanceApi-Interface'
+
 import { AppError } from '../errors/appError'
 import { UsersRepositoryInterface } from './../../modules/users/interfaces/users-interface'
 
@@ -30,7 +31,7 @@ export class GetSettingsDecrypted implements GetSettingsDecryptedInterface {
         base: user.apiURL,
         stream: user.streamURL
       }
-    }
+    } as SettingsInterface
 
     return settings
   }

@@ -1,4 +1,5 @@
 import { Account, CancelOrderResult, Candle, ExchangeInfo, MiniTicker, MyTrade, NewOrderSpot, Order, OrderType_LT, QueryOrderResult, Ticker, UserDataStreamEvent } from 'binance-api-node'
+import { SettingsInterface } from '../../../dtos/dtos'
 
 export type SideOrderTypes = 'BUY' | 'SELL'
 
@@ -18,15 +19,6 @@ export const enum OrderType {
   TAKE_PROFIT_LIMIT = 'TAKE_PROFIT_LIMIT',
   TAKE_PROFIT_MARKET = 'TAKE_PROFIT_MARKET',
   TRAILING_STOP_MARKET = 'TRAILING_STOP_MARKET',
-}
-
-export interface SettingsInterface {
-  APIKEY: string
-  APISECRET: string
-  urls: {
-    base: string
-    stream: string
-  }
 }
 
 export type OutputNewOrder = Order

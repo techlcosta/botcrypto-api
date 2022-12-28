@@ -19,14 +19,14 @@ export class WebSocketServer implements WebSocketServerInterface {
   ) { }
 
   broadcast (data: Object): void {
-    if (!this.wss || !this.wss.clients) return
+    if (!this.wss?.clients) return
     this.wss.clients.forEach((client) => {
       if (client.OPEN) client.send(JSON.stringify(data))
     })
   }
 
   direct (userId: string, data: Object): void {
-    if (!this.wss || !this.wss.clients) return
+    if (!this.wss?.clients) return
     this.wss.clients.forEach((client) => {
       const { sub: clientId } = decode(client.protocol) as PayloadInterface
       if (client.OPEN && clientId === userId)client.send(JSON.stringify(data))

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
+import { GetMonitorsUseCase } from '../use-cases/getMonitors-useCase'
 import { MonitorsRepository } from './../repositories/monitors-repository'
-import { GetMonitorsUseCase } from './../use-cases/getMonitors-usecase'
 
 export class GetMonitorsController {
   async handle (request: Request, response: Response): Promise<Response> {

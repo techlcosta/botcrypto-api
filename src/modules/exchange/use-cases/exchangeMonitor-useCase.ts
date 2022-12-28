@@ -2,27 +2,29 @@
 import { WebSocketServerInterface } from '../../../app-ws'
 import { MonitorTypesEnum } from '../../../dtos/dtos'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
-import { MonitorsRepositoryInterface } from '../../monitors/interfaces/monitors-interface'
-import { ExchangeActionsInterface } from '../interfaces/exchange-interface'
+import { MonitorsActionsInterface } from '../../monitors/interfaces/monitorsActions-interface'
+import { MonitorsRepositoryInterface } from '../../monitors/interfaces/monitorsRepository-interface'
 
 export class ExchangeMonitorUseCase {
   constructor (
     private readonly wss: WebSocketServerInterface,
     private readonly monitorsRepository: MonitorsRepositoryInterface,
     private readonly getSettingsDecrypted: GetSettingsDecryptedInterface,
-    private readonly exchangeActions: ExchangeActionsInterface
+    private readonly monitorsActions: MonitorsActionsInterface
   ) { }
 
   async execute (): Promise<void> {
+    await this.monitorsActions.clearCache()
+
     const monitors = await this.monitorsRepository.getActiveMonitors()
 
-    await this.exchangeActions.startMiniTickerMonitor({
+    await this.monitorsActions.startMiniTickerMonitor({
       broadcastLabel: 'miniTickerStream',
       showLogs: false,
       broadcast: (data) => this.wss.broadcast(data)
     })
 
-    await this.exchangeActions.startTickerAndBookMonitor({
+    await this.monitorsActions.startTickerAndBookMonitor({
       broadcastLabel: 'TickerStream,bookStream',
       showLogs: false,
       broadcast: (data) => this.wss.broadcast(data)
@@ -34,8 +36,8 @@ export class ExchangeMonitorUseCase {
       const settings = await this.getSettingsDecrypted.handle({ userId: monitor.userId })
       setTimeout(() => {
         switch (monitor.type) {
-          case MonitorTypesEnum.USER_DATA:
-            return this.exchangeActions.startUserDataMonitor({
+          case MonitorTypesEnum.WALLET:
+            return this.monitorsActions.startUserDataMonitor({
               broadcastLabel: monitor.broadcastLabel ?? '',
               showLogs: monitor.showLogs,
               userId: monitor.userId,
@@ -44,7 +46,7 @@ export class ExchangeMonitorUseCase {
             })
 
           case MonitorTypesEnum.CANDLES:
-            return this.exchangeActions.startChartMonitor({
+            return this.monitorsActions.startChartMonitor({
               userId: monitor.userId,
               symbol: monitor.symbol,
               interval: monitor.interval ?? 'm1',
