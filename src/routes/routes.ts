@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { automationsRoutes } from './automations.routes'
 import { exchangeRoutes } from './exchange.routes'
 import { monitorsRoutes } from './monitors.routes'
 import { ordersRoutes } from './orders.routes'
@@ -16,3 +17,5 @@ router.use('/exchange', exchangeRoutes)
 router.use('/orders', ordersRoutes)
 
 router.use('/monitors', monitorsRoutes)
+
+router.use('/automations', automationsRoutes)
