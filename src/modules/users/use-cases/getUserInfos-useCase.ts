@@ -1,5 +1,5 @@
 import { AppError } from '../../../helpers/errors/appError'
-import { UsersRepositoryInterface } from '../interfaces/users-interface'
+import { UsersRepositoryInterface } from '../interfaces/usersRepository-interface'
 
 interface GetUserInfosUseCaseRequestInterface {
   id: string
