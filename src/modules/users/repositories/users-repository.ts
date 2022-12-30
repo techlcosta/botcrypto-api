@@ -1,6 +1,5 @@
 import { prisma } from '../../../prisma'
-import { InputUpdateUserInterface, UserInterface, UsersRepositoryInterface } from '../interfaces/users-interface'
-import { InputFindUserByIdInterface, InputFindUserByUserNameInterface } from './../interfaces/users-interface'
+import { InputFindUserByIdInterface, InputFindUserByUserNameInterface, InputUpdateUserInterface, UserInterface, UsersRepositoryInterface } from '../interfaces/usersRepository-interface'
 
 export class UsersRepository implements UsersRepositoryInterface {
   async findById ({ id }: InputFindUserByIdInterface): Promise<UserInterface | null> {

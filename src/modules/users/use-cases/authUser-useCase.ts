@@ -2,7 +2,7 @@ import { compare } from 'bcrypt'
 import { AppError } from '../../../helpers/errors/appError'
 
 import { sign } from 'jsonwebtoken'
-import { UsersRepositoryInterface } from '../interfaces/users-interface'
+import { UsersRepositoryInterface } from '../interfaces/usersRepository-interface'
 
 interface AuthenticateUserRequestUseCaseInterface {
   username: string
