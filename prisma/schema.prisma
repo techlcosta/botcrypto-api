@@ -11,18 +11,19 @@ datasource db {
 }
 
 model User {
-  id        String    @id @unique @default(uuid())
-  username  String    @unique
-  password  String
-  apiURL    String
-  streamURL String
-  accessKey String
-  secretKey String
-  Order     Order[]
-  updatedAt DateTime  @default(now()) @updatedAt
-  createdAt DateTime  @default(now())
-  Symbol    Symbol[]
-  Monitor   Monitor[]
+  id         String       @id @unique @default(uuid())
+  username   String       @unique
+  password   String
+  apiURL     String
+  streamURL  String
+  accessKey  String
+  secretKey  String
+  Order      Order[]
+  updatedAt  DateTime     @default(now()) @updatedAt
+  createdAt  DateTime     @default(now())
+  Symbol     Symbol[]
+  Monitor    Monitor[]
+  Automation Automation[]
 
   @@map("users")
 }
@@ -92,4 +93,21 @@ model Monitor {
   @@unique([type, symbol, interval, userId])
   @@index([symbol])
   @@map("Monitors")
+}
+
+model Automation {
+  id         String   @id @unique @default(uuid())
+  name       String
+  symbol     String
+  indexes    String
+  conditions String
+  isActive   Boolean  @default(false)
+  showLogs   Boolean  @default(false)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  updatedAt  DateTime @default(now()) @updatedAt
+  createdAt  DateTime @default(now())
+
+  @@unique([name, symbol, userId])
+  @@map("Automations")
 }
