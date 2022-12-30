@@ -1,9 +1,8 @@
 import { NodeBinanceApiAdapterInterface, OutputOrderStatusInterface, OutputOrdertradeInterface } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 
-import { OrdersRepositoryInterface } from '../interfaces/orders-interface'
+import { OrderInterface, OrdersRepositoryInterface } from '../interfaces/ordersRepository-interface'
 import { AppError } from './../../../helpers/errors/appError'
-import { OrderInterface } from './../interfaces/orders-interface'
 
 interface RequestSyncOrderInterface {
   userId: string

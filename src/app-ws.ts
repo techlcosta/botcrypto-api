@@ -1,6 +1,6 @@
 import { decode, verify } from 'jsonwebtoken'
 import WebSocket, { Server } from 'ws'
-import { UsersRepositoryInterface } from './modules/users/interfaces/users-interface'
+import { UsersRepositoryInterface } from './modules/users/interfaces/usersRepository-interface'
 
 interface PayloadInterface {
   sub: string

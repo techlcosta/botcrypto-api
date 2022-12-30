@@ -1,4 +1,4 @@
-import { SettingsInterface } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-interface'
+import { SettingsInterface } from '../../../dtos/dtos'
 
 export interface InputStartMiniTickerMonitorInterface {
   showLogs: boolean

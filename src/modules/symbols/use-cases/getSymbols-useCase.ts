@@ -1,4 +1,4 @@
-import { SymbolsInterface, SymbolsRepositoryInterface } from './../interfaces/symbols-interface'
+import { SymbolsInterface, SymbolsRepositoryInterface } from '../interfaces/symbolsRepository-interface'
 
 interface RequestGetSymbolsInterface {
   page?: number

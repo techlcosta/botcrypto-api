@@ -55,7 +55,7 @@ async function main (): Promise<void> {
           type: MonitorTypesEnum.WALLET,
           isActive: true,
           isSystemMonitor: true,
-          broadcastLabel: ''
+          broadcastLabel: 'balanceStream,executionStream'
         },
         {
           symbol: 'BTCBUSD',

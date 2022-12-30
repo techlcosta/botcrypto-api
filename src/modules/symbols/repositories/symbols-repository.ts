@@ -1,5 +1,5 @@
+import { InputCountSymbolsInterface, InputDeleteSymbolInterface, InputFindSymbolInterface, InputGetSymbolsInterface, InputUpdateSymbolsInterface, SymbolsInterface, SymbolsRepositoryInterface } from '../interfaces/symbolsRepository-interface'
 import { prisma } from './../../../prisma'
-import { InputCountSymbolsInterface, InputDeleteSymbolInterface, InputFindSymbolInterface, InputGetSymbolsInterface, InputUpdateSymbolsInterface, SymbolsInterface, SymbolsRepositoryInterface } from './../interfaces/symbols-interface'
 
 export class SymbolsRepository implements SymbolsRepositoryInterface {
   async get ({ userId, symbol, page, onlyFavorites }: InputGetSymbolsInterface): Promise<SymbolsInterface[]> {

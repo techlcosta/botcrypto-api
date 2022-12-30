@@ -2,7 +2,7 @@ import { OrderType } from 'binance-api-node'
 import { BinanceApiNodeAdapterInterface, OutputNewOrder } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-interface'
 import { SideOrderTypes, TypeOrderTypes } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
-import { OrdersRepositoryInterface } from '../interfaces/orders-interface'
+import { OrdersRepositoryInterface } from '../interfaces/ordersRepository-interface'
 import { AppError } from './../../../helpers/errors/appError'
 
 interface RequestNewOrderInterface {

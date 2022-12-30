@@ -1,4 +1,4 @@
-import { OrderInterface, OrdersRepositoryInterface } from './../interfaces/orders-interface'
+import { OrderInterface, OrdersRepositoryInterface } from '../interfaces/ordersRepository-interface'
 
 interface RequestGetOrdersInterface {
   page: number

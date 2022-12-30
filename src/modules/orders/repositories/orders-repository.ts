@@ -1,5 +1,5 @@
 import { prisma } from '../../../prisma'
-import { InputCountOrdersInterface, InputCreateOrdersInterface, InputFindByUserIdInterface, InputFindOrderByIdInterface, InputFindOrderByOrderIdAndClientIdInterface, InputGetOrdersInterface, InputUpdateOrdersInterface, OrderInterface, OrdersRepositoryInterface } from './../interfaces/orders-interface'
+import { InputCountOrdersInterface, InputCreateOrdersInterface, InputFindByUserIdInterface, InputFindOrderByIdInterface, InputFindOrderByOrderIdAndClientIdInterface, InputGetOrdersInterface, InputUpdateOrdersInterface, OrderInterface, OrdersRepositoryInterface } from '../interfaces/ordersRepository-interface'
 
 export class OrdersRepository implements OrdersRepositoryInterface {
   async findById ({ userId, id }: InputFindOrderByIdInterface): Promise<OrderInterface | null> {

@@ -1,8 +1,8 @@
 import { SettingsInterface } from '../../dtos/dtos'
 import { AesCryptoAdapterInterface } from '../adapters/aesCrypto/aesCrypto-adapter'
 
+import { UsersRepositoryInterface } from '../../modules/users/interfaces/usersRepository-interface'
 import { AppError } from '../errors/appError'
-import { UsersRepositoryInterface } from './../../modules/users/interfaces/users-interface'
 
 interface InputGetSettingsDecryptedInterface {
   userId: string

@@ -1,5 +1,5 @@
+import { InputUpdateSymbolsInterface, SymbolsRepositoryInterface } from '../interfaces/symbolsRepository-interface'
 import { AppError } from './../../../helpers/errors/appError'
-import { InputUpdateSymbolsInterface, SymbolsRepositoryInterface } from './../interfaces/symbols-interface'
 
 export class UpdateSymbolsUseCase {
   constructor (private readonly symbolsRepository: SymbolsRepositoryInterface) { }

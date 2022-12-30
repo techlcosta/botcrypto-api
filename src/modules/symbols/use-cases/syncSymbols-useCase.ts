@@ -1,7 +1,7 @@
 import { SymbolLotSizeFilter, SymbolMinNotionalFilter } from 'binance-api-node'
 import { BinanceApiNodeAdapterInterface } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-interface'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
-import { SymbolsRepositoryInterface } from '../interfaces/symbols-interface'
+import { SymbolsRepositoryInterface } from '../interfaces/symbolsRepository-interface'
 
 export class SyncSymbolsUseCase {
   constructor (

@@ -3,8 +3,7 @@ import { IndexesTypesEnum, IndexesTypesType, SettingsInterface } from '../../../
 import { BinanceApiNodeAdapterInterface } from '../../../helpers/adapters/binanceApiNode/binanceApiNode-interface'
 import { NodeBinanceApiAdapterInterface, OutputOHLCInterface } from '../../../helpers/adapters/nodeBinanceApi/nodeBinanceApi-Interface'
 import { TechnicalIndicatorsAdapterInterface } from '../../../helpers/adapters/technicalIndicators/technicalIndicators-interface'
-
-import { InputUpdateOrdersInterface, OrdersRepositoryInterface } from '../../orders/interfaces/orders-interface'
+import { InputUpdateOrdersInterface, OrdersRepositoryInterface } from '../../orders/interfaces/ordersRepository-interface'
 import { RobotRepositoryInterface } from '../../robot/interfaces/robot-interface'
 import { InputStartChartMonitorInterface, InputStartMiniTickerMonitorInterface, InputStartTickerMonitorInterface, InputStartUserDataMonitorInterface, MonitorsActionsInterface, StopChartMonitorInterface } from '../interfaces/monitorsActions-interface'
 
@@ -38,11 +37,7 @@ export class MonitorsActions implements MonitorsActionsInterface {
     const balance = await this.binanceApiNodeAdapter.exchangeBalance(settings)
 
     const balanceWallet = balance.balances.map((value) => {
-      return {
-        symbol: value.asset,
-        available: value.free,
-        onOrder: value.locked
-      }
+      return { symbol: value.asset, available: value.free, onOrder: value.locked }
     })
 
     for (const balance of balanceWallet) {
@@ -55,26 +50,70 @@ export class MonitorsActions implements MonitorsActionsInterface {
   private async processChart (data: InputProcessChartInterface): Promise<void> {
     const { userId, symbol, interval, indexes, ohlc } = data
 
-    for (const index of indexes) {
+    for (const target of indexes) {
+      const [index, params] = target.split('_')
+
       switch (index) {
         case IndexesTypesEnum.RSI:
-          await this.robotRepository.updateRobotMemory({
-            userId,
-            symbol,
-            index,
-            interval,
-            value: await this.technicalIndicatorsAdapter.rsiCalc({ period: 14, values: ohlc.close })
-          })
+          await (async (): Promise<void> => {
+            const value = await this.technicalIndicatorsAdapter.rsiCalc({ period: Number(params), values: ohlc.close })
+
+            await this.robotRepository.updateRobotMemory({ userId, symbol, index, interval, value })
+          })()
           break
+
         case IndexesTypesEnum.MACD:
-          await this.robotRepository.updateRobotMemory({
-            userId,
-            symbol,
-            index,
-            interval,
-            value: await this.technicalIndicatorsAdapter.macdCalc({ values: ohlc.close })
-          })
+          await (async (): Promise<void> => {
+            const paramsArray = params.split('.')
+
+            const [fastPeriod, slowPeriod, signalPeriod] = paramsArray.map(item => Number(item))
+
+            const value = await this.technicalIndicatorsAdapter.macdCalc({ fastPeriod, slowPeriod, signalPeriod, values: ohlc.close })
+
+            await this.robotRepository.updateRobotMemory({ userId, symbol, index, interval, value })
+          })()
           break
+
+        case IndexesTypesEnum.SMA:
+          await (async (): Promise<void> => {
+            const value = await this.technicalIndicatorsAdapter.smaCalc({ period: Number(params), values: ohlc.close })
+
+            await this.robotRepository.updateRobotMemory({ userId, symbol, index, interval, value })
+          })()
+          break
+
+        case IndexesTypesEnum.EMA:
+          await (async (): Promise<void> => {
+            const value = await this.technicalIndicatorsAdapter.emaCalc({ period: Number(params), values: ohlc.close })
+
+            await this.robotRepository.updateRobotMemory({ userId, symbol, index, interval, value })
+          })()
+          break
+
+        case IndexesTypesEnum.BOLLINGER_BANDS:
+          await (async (): Promise<void> => {
+            const paramsArray = params.split('.')
+
+            const [period, stdDev] = paramsArray.map(item => Number(item))
+
+            const value = await this.technicalIndicatorsAdapter.bollingerBandsCalc({ period, stdDev, values: ohlc.close })
+
+            await this.robotRepository.updateRobotMemory({ userId, symbol, index, interval, value })
+          })()
+          break
+
+        case IndexesTypesEnum.STOCH_RSI:
+          await (async (): Promise<void> => {
+            const paramsArray = params.split('.')
+
+            const [rsiPeriod, stochasticPeriod, kPeriod, dPeriod] = paramsArray.map(item => Number(item))
+
+            const value = await this.technicalIndicatorsAdapter.stochRSICalc({ rsiPeriod, stochasticPeriod, kPeriod, dPeriod, values: ohlc.close })
+
+            await this.robotRepository.updateRobotMemory({ userId, symbol, index, interval, value })
+          })()
+          break
+
         default:
           break
       }
@@ -178,7 +217,7 @@ export class MonitorsActions implements MonitorsActionsInterface {
   async startTickerAndBookMonitor (data: InputStartTickerMonitorInterface): Promise<void> {
     const { showLogs, broadcastLabel, broadcast } = data
 
-    const [ticker, books] = broadcastLabel?.split(',')
+    const [ticker, books] = broadcastLabel?.split(',') as IndexesTypesType[]
 
     const bookCache: Array<{ symbol: string, bestAsk: number, bestBid: number, eventTime: number }> = []
 
@@ -188,6 +227,8 @@ export class MonitorsActions implements MonitorsActionsInterface {
       broadcast({ [ticker]: market })
 
       for (const item of market) {
+        await this.robotRepository.updateRobotMemory({ symbol: item.symbol, index: 'TICKER', value: item })
+
         const book = { symbol: item.symbol, bestAsk: parseFloat(item.bestAsk), bestBid: parseFloat(item.bestBid), eventTime: item.eventTime }
 
         await this.robotRepository.updateRobotMemory({ symbol: book.symbol, index: 'BOOK', value: book })
@@ -239,12 +280,16 @@ export class MonitorsActions implements MonitorsActionsInterface {
   async stopChartMonitor ({ settings, userId, symbol, interval, indexes }: StopChartMonitorInterface): Promise<void> {
     await this.nodeBinanceApiAdapter.closeChartStream({ settings, symbol, interval }).catch(err => console.log(err))
 
-    const arrayIndexes = indexes.split(',') as IndexesTypesType[]
+    const converted: IndexesTypesType[] = []
 
-    arrayIndexes.push('LAST_CANDLE')
+    for (const value of indexes.split(',')) {
+      converted.push(value.split('_')[0] as IndexesTypesType)
+    }
 
-    for (const index of arrayIndexes) {
-      await this.robotRepository.deleteKeyOnRobotMemory({ userId, symbol, interval, index })
+    converted.push('LAST_CANDLE')
+
+    for (const index of converted) {
+      this.robotRepository.deleteKeyOnRobotMemory({ userId, symbol, interval, index }).catch(err => console.error(err))
     }
 
     console.log(`Chart monitor by userId:${userId} has stoped at ${symbol}_${interval} `)

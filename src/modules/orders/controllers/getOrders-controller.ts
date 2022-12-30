@@ -17,7 +17,7 @@ export class GetOrdersController {
     const orders = await getOdersUseCase.execute({
       userId,
       symbol,
-      page: Number(page ?? 1)
+      page: Number(page) || 1
     })
 
     return response.send(orders)

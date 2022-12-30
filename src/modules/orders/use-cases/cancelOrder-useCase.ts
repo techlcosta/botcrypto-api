@@ -2,7 +2,7 @@ import { BinanceApiNodeAdapterInterface } from '../../../helpers/adapters/binanc
 import { AppError } from '../../../helpers/errors/appError'
 import { GetSettingsDecryptedInterface } from '../../../helpers/utils/getSettingsDecrypted'
 
-import { OrderInterface, OrdersRepositoryInterface } from '../interfaces/orders-interface'
+import { OrderInterface, OrdersRepositoryInterface } from '../interfaces/ordersRepository-interface'
 
 interface RequestCancelOrderUseCaseInterface {
   symbol: string

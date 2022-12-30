@@ -16,8 +16,8 @@ import {
 } from './technicalIndicators-interface'
 
 export class TechnicalIndicatorsAdapter implements TechnicalIndicatorsAdapterInterface {
-  async rsiCalc ({ values, period }: InputCalcRSIInterface): Promise<OutputCalcRSIInterface> {
-    const result = rsi({ values, period: period ?? 14 })
+  async rsiCalc ({ values, period = 14 }: InputCalcRSIInterface): Promise<OutputCalcRSIInterface> {
+    const result = rsi({ values, period })
 
     const converted: OutputCalcRSIInterface = {
       current: result[result.length - 1],
@@ -45,13 +45,13 @@ export class TechnicalIndicatorsAdapter implements TechnicalIndicatorsAdapterInt
     return converted
   }
 
-  async stochRSICalc ({ values, rsiPeriod = 14, stochasticPeriod = 14, kPeriod = 3, dPeriod = 3 }: InputCalcStochasticRSIInterface): Promise<OutputCalcStochasticRSIInterface> {
+  async stochRSICalc ({ values, rsiPeriod, stochasticPeriod, kPeriod, dPeriod }: InputCalcStochasticRSIInterface): Promise<OutputCalcStochasticRSIInterface> {
     const result = stochasticrsi({
       values,
-      rsiPeriod,
-      stochasticPeriod,
-      kPeriod,
-      dPeriod
+      rsiPeriod: rsiPeriod || 14,
+      stochasticPeriod: stochasticPeriod || 14,
+      kPeriod: kPeriod || 3,
+      dPeriod: dPeriod || 3
     })
 
     const converted: OutputCalcStochasticRSIInterface = {
